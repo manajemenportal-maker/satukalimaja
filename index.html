@@ -221,17 +221,17 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
+                        <div id="dash-card-saldo" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
                             <div class="absolute right-0 top-0 w-16 h-16 bg-blue-50 rounded-bl-full -z-0"></div>
                             <span class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 z-10 flex items-center gap-1.5"><i class="fa-solid fa-wallet text-blue-500"></i> Kas & Bank Aktif</span>
                             <span id="dash-saldo" class="text-2xl font-bold text-slate-800 z-10">Rp 0</span>
                         </div>
-                        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
+                        <div id="dash-card-pemasukan" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
                             <div class="absolute right-0 top-0 w-16 h-16 bg-green-50 rounded-bl-full -z-0"></div>
                             <span class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 z-10 flex items-center gap-1.5"><i class="fa-solid fa-arrow-trend-up text-green-500"></i> Pemasukan</span>
                             <span id="dash-pemasukan" class="text-2xl font-bold text-green-600 z-10">Rp 0</span>
                         </div>
-                        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
+                        <div id="dash-card-pengeluaran" class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
                             <div class="absolute right-0 top-0 w-16 h-16 bg-red-50 rounded-bl-full -z-0"></div>
                             <span class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 z-10 flex items-center gap-1.5"><i class="fa-solid fa-arrow-trend-down text-red-500"></i> Pengeluaran</span>
                             <span id="dash-pengeluaran" class="text-2xl font-bold text-red-600 z-10">Rp 0</span>
@@ -248,7 +248,7 @@
                         <div class="p-5 border-b border-brand-100 bg-brand-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
                                 <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-user-shield text-brand-600"></i> Manajemen Akun Karyawan</h3>
-                                <p class="text-xs text-slate-500 mt-1">Hanya Administrator yang dapat membuat akun baru. Tidak ada pendaftaran akun dari halaman login.</p>
+                                <p class="text-xs text-slate-500 mt-1">Hanya Administrator yang dapat membuat, mengaktifkan, menonaktifkan, dan menghapus akses akun karyawan.</p>
                             </div>
                             <span id="admin-users-count" class="self-start sm:self-auto bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">0 Akun</span>
                         </div>
@@ -275,7 +275,8 @@
                             <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div class="text-xs text-slate-500 space-y-1">
                                     <p><i class="fa-solid fa-circle-info text-brand-500 mr-1"></i>Akun yang dibuat di sini langsung berstatus <b>Aktif</b> sebagai Karyawan.</p>
-                                    <p><i class="fa-solid fa-toggle-on text-green-600 mr-1"></i>Status akun dapat diubah kapan saja melalui tombol <b>Aktifkan / Nonaktifkan</b> pada tabel di bawah.</p>
+                                    <p><i class="fa-solid fa-toggle-on text-green-600 mr-1"></i>Status akun dapat diubah melalui <b>Aktifkan / Nonaktifkan</b>. Tombol <b>Hapus User</b> memutus akses ERP secara permanen dari database aplikasi.</p>
+                                    <p><i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i>Untuk menghapus identitas login Firebase sepenuhnya agar email dapat dipakai ulang, hapus juga user tersebut di Firebase Authentication Console.</p>
                                 </div>
                                 <button type="submit" class="bg-brand-600 text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-brand-700 shadow-sm flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-user-plus"></i> Buat & Aktifkan Akun
@@ -285,7 +286,7 @@
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left data-grid">
-                                <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Dibuat</th><th class="text-center">Aktif / Nonaktif</th></tr></thead>
+                                <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Dibuat</th><th class="text-center">Kelola Akun</th></tr></thead>
                                 <tbody id="admin-users-tbody">
                                     <tr><td colspan="6" class="text-center text-slate-400 py-6">Memuat daftar akun...</td></tr>
                                 </tbody>
@@ -294,7 +295,7 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                        <div id="dash-recent-cash-card" class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
                             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
                                 <h3 class="font-bold text-slate-800 text-sm">Riwayat Jurnal Kas</h3>
                                 <button onclick="window.switchTab('finance')" class="text-brand-600 text-xs font-bold hover:underline">Buka Buku Kas</button>
@@ -1432,6 +1433,7 @@
                     document.getElementById('profile-modal-initial').innerText = currentName.charAt(0).toUpperCase();
                     document.getElementById('profile-modal-role').innerText = window.userRole === 'admin' ? 'Administrator' : 'Karyawan';
                     document.getElementById('btn-settings').style.display = 'flex';
+                    applyRoleBasedUI();
 
                     const adminAccountPanel = document.getElementById('admin-account-panel');
                     if (adminAccountPanel) adminAccountPanel.classList.toggle('hidden', window.userRole !== 'admin');
@@ -1537,6 +1539,32 @@
             return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
         }
 
+
+        // --- HAK AKSES MODUL KEUANGAN: KHUSUS ADMIN ---
+        const ADMIN_ONLY_TABS = new Set(['invoices', 'finance', 'reports']);
+
+        function applyRoleBasedUI() {
+            const isAdmin = window.userRole === 'admin';
+            ['btn-invoices', 'btn-finance', 'btn-reports'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', !isAdmin);
+            });
+
+            // Informasi kas/pemasukan/pengeluaran dan riwayat jurnal juga disembunyikan dari Karyawan.
+            ['dash-card-saldo', 'dash-card-pemasukan', 'dash-card-pengeluaran', 'dash-recent-cash-card'].forEach((id) => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', !isAdmin);
+            });
+        }
+
+        function requireAdminModule(moduleName = 'modul ini') {
+            if (window.userRole !== 'admin') {
+                alert(`AKSES DITOLAK: ${moduleName} hanya dapat dibuka dan dikelola oleh Administrator.`);
+                return false;
+            }
+            return true;
+        }
+
         function startAdminUsersSync() {
             if (window.userRole !== 'admin') return;
             if (window.adminUsersUnsubscribe) window.adminUsersUnsubscribe();
@@ -1578,14 +1606,19 @@
                         ? '<span class="px-2 py-1 rounded bg-green-100 text-green-700 text-[11px] font-bold uppercase">Aktif</span>'
                         : '<span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[11px] font-bold uppercase">Tidak Aktif</span>');
 
-                let actionButton = '';
+                let statusButton = '';
                 if (isCurrentAccount) {
-                    actionButton = '<button type="button" disabled class="px-3 py-1.5 rounded bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold cursor-not-allowed" title="Akun yang sedang dipakai tidak dapat dinonaktifkan sendiri"><i class="fa-solid fa-user-lock mr-1"></i>Akun Anda</button>';
+                    statusButton = '<button type="button" disabled class="px-3 py-1.5 rounded bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold cursor-not-allowed" title="Akun yang sedang dipakai tidak dapat dinonaktifkan sendiri"><i class="fa-solid fa-user-lock mr-1"></i>Akun Anda</button>';
                 } else if (active) {
-                    actionButton = `<button type="button" onclick="window.setUserActiveStatus('${u.id}', false, '${safeName.replace(/'/g, "&#39;")}')" class="px-3 py-1.5 rounded bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-600 hover:text-white transition-colors"><i class="fa-solid fa-user-slash mr-1"></i>Nonaktifkan</button>`;
+                    statusButton = `<button type="button" onclick="window.setUserActiveStatus('${u.id}', false, '${safeName.replace(/'/g, "&#39;")}')" class="px-3 py-1.5 rounded bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-600 hover:text-white transition-colors"><i class="fa-solid fa-user-slash mr-1"></i>Nonaktifkan</button>`;
                 } else {
-                    actionButton = `<button type="button" onclick="window.setUserActiveStatus('${u.id}', true, '${safeName.replace(/'/g, "&#39;")}')" class="px-3 py-1.5 rounded bg-green-50 text-green-700 border border-green-200 text-xs font-bold hover:bg-green-600 hover:text-white transition-colors"><i class="fa-solid fa-user-check mr-1"></i>Aktifkan</button>`;
+                    statusButton = `<button type="button" onclick="window.setUserActiveStatus('${u.id}', true, '${safeName.replace(/'/g, "&#39;")}')" class="px-3 py-1.5 rounded bg-green-50 text-green-700 border border-green-200 text-xs font-bold hover:bg-green-600 hover:text-white transition-colors"><i class="fa-solid fa-user-check mr-1"></i>Aktifkan</button>`;
                 }
+
+                const isProtectedPrimaryAdmin = String(u.email || '').toLowerCase() === 'irsukin@gmail.com';
+                const deleteButton = (isCurrentAccount || isProtectedPrimaryAdmin)
+                    ? '<button type="button" disabled class="px-3 py-1.5 rounded bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold cursor-not-allowed" title="Akun Administrator utama / akun yang sedang dipakai tidak dapat dihapus"><i class="fa-solid fa-trash-can mr-1"></i>Hapus</button>'
+                    : `<button type="button" onclick="window.deleteManagedUser('${u.id}', '${safeName.replace(/'/g, "&#39;")}', '${safeEmail.replace(/'/g, "&#39;")}')" class="px-3 py-1.5 rounded bg-rose-600 text-white border border-rose-600 text-xs font-bold hover:bg-rose-700 transition-colors"><i class="fa-solid fa-trash-can mr-1"></i>Hapus User</button>`;
 
                 return `<tr>
                     <td class="font-semibold">${safeName}</td>
@@ -1593,7 +1626,7 @@
                     <td>${role}</td>
                     <td>${status}</td>
                     <td>${dt}</td>
-                    <td class="text-center whitespace-nowrap">${actionButton}</td>
+                    <td class="text-center whitespace-nowrap"><div class="flex items-center justify-center gap-2">${statusButton}${deleteButton}</div></td>
                 </tr>`;
             }).join('');
         }
@@ -1638,6 +1671,34 @@
             } catch (err) {
                 console.error('Update status akun gagal:', err);
                 alert('Gagal mengubah status akun: ' + (err.message || err));
+            }
+        };
+
+
+        window.deleteManagedUser = async (uid, displayName = 'akun ini', email = '') => {
+            if (window.userRole !== 'admin' || !window.user) {
+                alert('Akses ditolak. Hanya Administrator yang dapat menghapus user.');
+                return;
+            }
+            const normalizedEmail = String(email || '').toLowerCase();
+            if (uid === window.user.uid || normalizedEmail === 'irsukin@gmail.com') {
+                alert('Akun Administrator utama / akun yang sedang digunakan tidak dapat dihapus.');
+                return;
+            }
+
+            const ok = confirm(`HAPUS USER ${displayName}?
+
+Akses ERP untuk user ini akan diputus dan profilnya dihapus dari database aplikasi. Tindakan ini tidak dapat dibatalkan dari dashboard.
+
+Lanjutkan?`);
+            if (!ok) return;
+
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', uid));
+                alert(`User berhasil dihapus dari ERP dan tidak dapat masuk lagi.\n\nCatatan: identitas login Firebase Authentication masih tersimpan. Jika email ini ingin dipakai ulang untuk akun baru, hapus juga user tersebut melalui Firebase Console > Authentication > Users.`);
+            } catch (err) {
+                console.error('Hapus user gagal:', err);
+                alert('Gagal menghapus user: ' + (err.message || err));
             }
         };
 
@@ -1830,15 +1891,22 @@
                 window.populateDealDropdown();
             });
             
-            onSnapshot(dataPath('invoices'), (snapshot) => {
-                window.invoices = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderInvoices();
-            });
+            // Data Invoice, Kas/Bank, dan Laporan Keuangan hanya disinkronkan untuk Administrator.
+            if (window.userRole === 'admin') {
+                onSnapshot(dataPath('invoices'), (snapshot) => {
+                    window.invoices = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                    window.renderInvoices();
+                }, (err) => console.error('Invoice sync error:', err));
 
-            onSnapshot(dataPath('transactions'), (snapshot) => {
-                window.transactions = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderFinance(); window.renderDashboard(); window.renderReports();
-            });
+                onSnapshot(dataPath('transactions'), (snapshot) => {
+                    window.transactions = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                    window.renderFinance(); window.renderDashboard(); window.renderReports();
+                }, (err) => console.error('Finance sync error:', err));
+            } else {
+                window.invoices = [];
+                window.transactions = [];
+                window.renderDashboard();
+            }
         }
 
         // --- UI RENDER FUNCTIONS ---
@@ -2329,6 +2397,7 @@
 
         window.handleNewInvoice = async (e) => {
             e.preventDefault();
+            if (!requireAdminModule('pembuatan Faktur / Invoice')) return;
             const btn = e.target.querySelector('button[type="submit"]');
             const oldText = btn ? btn.innerText : 'Simpan Faktur';
             if(btn) { btn.innerText = "Memproses..."; btn.disabled = true; }
@@ -2366,6 +2435,7 @@
 
         window.submitPayment = async (e) => {
             e.preventDefault();
+            if (!requireAdminModule('pencatatan pembayaran Invoice')) return;
             const btn = e.target.querySelector('button[type="submit"]');
             const oldText = btn ? btn.innerText : 'Catat Pembayaran Jurnal';
             if(btn) { btn.innerText = "Memproses..."; btn.disabled = true; }
@@ -2393,6 +2463,7 @@
 
         window.handleNewTransaction = async (e) => {
             e.preventDefault();
+            if (!requireAdminModule('Kas & Bank')) return;
             const btn = e.target.querySelector('button[type="submit"]');
             const oldText = btn ? btn.innerText : 'Simpan Jurnal';
             if(btn) { btn.innerText = "Memproses..."; btn.disabled = true; }
@@ -2491,6 +2562,7 @@
 
         // --- UI TOGGLERS & MODALS ---
         window.switchTab = (id) => {
+            if (ADMIN_ONLY_TABS.has(id) && !requireAdminModule(id === 'invoices' ? 'Faktur / Invoice' : (id === 'finance' ? 'Kas & Bank' : 'Laporan Keuangan'))) return;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-'+id).classList.add('active');
             document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-brand-600', 'text-white', 'shadow-md', 'shadow-brand-900/50'); b.classList.add('text-slate-300'); });
@@ -2927,6 +2999,7 @@
         };
 
         window.toggleInvModal = (s) => {
+            if (s && !requireAdminModule('Faktur / Invoice')) return;
             const modal = document.getElementById('inv-create-modal');
             if (s) {
                 modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -2963,6 +3036,7 @@
         };
 
         window.openPayModal = (id) => {
+            if (!requireAdminModule('pembayaran Faktur / Invoice')) return;
             const inv = window.invoices.find(i=>String(i.id)===String(id));
             document.getElementById('pay-inv-id').value = inv.id;
             document.getElementById('pay-inv-num').innerText = inv.invNum;
@@ -2977,6 +3051,7 @@
         };
 
         window.toggleModal = (s) => {
+            if (s && !requireAdminModule('Kas & Bank')) return;
             const modal = document.getElementById('tx-modal');
             if (s) {
                 modal.classList.remove('hidden'); modal.classList.add('flex');
