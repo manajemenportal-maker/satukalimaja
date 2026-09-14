@@ -1357,7 +1357,8 @@
         };
         
         window.user = null;
-        window.userRole = 'user'; 
+        window.userRole = 'user';
+        window.currentUserApprovalUnsubscribe = null;
 
         // --- AUTH ---
         const initAuth = async () => {
@@ -1387,21 +1388,21 @@
                     const userDoc = await getDoc(userRef);
                     const userData = userDoc.exists() ? userDoc.data() : null;
 
-                    // Admin utama selalu dapat masuk. Akun baru wajib punya approved === true.
-                    // Akun lama yang sudah ada sebelum fitur approval dan belum punya field approved tetap kompatibel.
+                    // Semua akun selain Admin utama WAJIB memiliki approval eksplisit.
+                    // Tidak ada lagi kompatibilitas akun lama tanpa field approval: approved harus true DAN status harus approved.
                     if (!isPrimaryAdmin) {
                         if (!userData) {
                             alert("AKSES DITOLAK: Data akun belum terdaftar/terverifikasi oleh Administrator.");
                             await signOut(auth);
                             return;
                         }
-                        if (userData.approved === false || userData.status === 'pending') {
-                            alert("AKUN BELUM AKTIF. Pendaftaran Anda masih menunggu persetujuan Administrator.");
+                        if (userData.status === 'rejected') {
+                            alert("AKSES DITOLAK: Pendaftaran akun ini tidak disetujui Administrator.");
                             await signOut(auth);
                             return;
                         }
-                        if (userData.status === 'rejected') {
-                            alert("AKSES DITOLAK: Pendaftaran akun ini tidak disetujui Administrator.");
+                        if (userData.approved !== true || userData.status !== 'approved') {
+                            alert("AKUN BELUM AKTIF. Pendaftaran Anda masih menunggu persetujuan Administrator.");
                             await signOut(auth);
                             return;
                         }
@@ -1431,6 +1432,20 @@
 
                     startCloudSync();
                     if (window.userRole === 'admin') startPendingUsersSync();
+
+                    // Pantau status approval user yang sedang login. Jika approval dicabut, sesi langsung ditutup.
+                    if (!isPrimaryAdmin) {
+                        if (window.currentUserApprovalUnsubscribe) window.currentUserApprovalUnsubscribe();
+                        window.currentUserApprovalUnsubscribe = onSnapshot(userRef, async (snap) => {
+                            const liveData = snap.exists() ? snap.data() : null;
+                            if (!liveData || liveData.approved !== true || liveData.status !== 'approved') {
+                                if (auth.currentUser) {
+                                    alert("Akses akun Anda sudah tidak aktif. Silakan hubungi Administrator.");
+                                    await signOut(auth);
+                                }
+                            }
+                        }, (err) => console.error('Approval status listener error:', err));
+                    }
                 } catch (e) {
                     console.error("Error fetching user data:", e);
                     alert("Gagal memverifikasi status akun. Silakan coba masuk kembali.");
@@ -1442,6 +1457,10 @@
                 if (window.pendingUsersUnsubscribe) {
                     window.pendingUsersUnsubscribe();
                     window.pendingUsersUnsubscribe = null;
+                }
+                if (window.currentUserApprovalUnsubscribe) {
+                    window.currentUserApprovalUnsubscribe();
+                    window.currentUserApprovalUnsubscribe = null;
                 }
                 const authScreen = document.getElementById('auth-screen');
                 authScreen.classList.remove('hidden');
