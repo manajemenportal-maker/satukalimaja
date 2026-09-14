@@ -72,7 +72,7 @@
         <p class="text-sm font-medium text-slate-500">Sinkronisasi dengan Cloud Database</p>
     </div>
 
-    <!-- AUTH SCREEN (LAYAR LOGIN / DAFTAR) -->
+    <!-- AUTH SCREEN (LAYAR LOGIN SAJA) -->
     <div id="auth-screen" class="fixed inset-0 bg-brand-950 flex flex-col items-center justify-center p-4 z-[9999] hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative">
             <div class="p-8 text-center bg-slate-50 border-b border-slate-100">
@@ -94,39 +94,11 @@
                     <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
                 </div>
                 <button type="submit" class="w-full bg-brand-600 text-white p-3 rounded-xl font-bold hover:bg-brand-700 shadow-md transition-colors">Masuk Sistem</button>
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm mt-4">
+                <div class="flex items-center justify-center text-sm mt-4">
                     <button type="button" onclick="window.handlePasswordReset()" class="text-brand-600 font-bold hover:underline">Lupa kata sandi?</button>
-                    <span class="text-slate-500">Belum punya akun? <button type="button" onclick="window.toggleAuthMode()" class="text-brand-600 font-bold hover:underline">Daftar Karyawan Baru</button></span>
                 </div>
-            </form>
-
-            <!-- Register Form (Karyawan Saja) -->
-            <form id="form-register" onsubmit="window.handleRegister(event)" class="p-8 space-y-4 hidden">
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Nama Lengkap</label>
-                    <input type="text" id="reg-name" required placeholder="Nama Anda" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Email Aktif</label>
-                    <input type="email" id="reg-email" required placeholder="email@perusahaan.com" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Buat Kata Sandi</label>
-                    <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
-                </div>
-                
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 flex gap-2">
-                    <i class="fa-solid fa-circle-info mt-0.5"></i>
-                    <span>Setelah mendaftar, akun berstatus <b>Menunggu Persetujuan Admin</b> dan belum dapat digunakan untuk masuk.</span>
-                </div>
-                
-                <div class="flex gap-3 pt-2">
-                    <button type="button" onclick="window.toggleAuthMode()" class="w-1/3 bg-slate-100 text-slate-600 p-3 rounded-xl font-bold hover:bg-slate-200 border border-slate-200 transition-colors flex items-center justify-center gap-2" title="Kembali ke Login">
-                        <i class="fa-solid fa-arrow-left"></i> Kembali
-                    </button>
-                    <button type="submit" class="w-2/3 bg-green-600 text-white p-3 rounded-xl font-bold hover:bg-green-700 shadow-md transition-colors">
-                        Buat Akun
-                    </button>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center text-[11px] text-slate-500">
+                    Akun hanya dapat dibuat oleh Administrator melalui Dashboard Admin.
                 </div>
             </form>
         </div>
@@ -271,20 +243,48 @@
                         </div>
                     </div>
 
-                    <!-- ADMIN: PERSETUJUAN AKUN BARU -->
-                    <div id="admin-approval-panel" class="hidden bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
-                        <div class="p-5 border-b border-amber-100 bg-amber-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <!-- ADMIN: PEMBUATAN & MANAJEMEN AKUN KARYAWAN -->
+                    <div id="admin-account-panel" class="hidden bg-white rounded-xl shadow-sm border border-brand-200 overflow-hidden">
+                        <div class="p-5 border-b border-brand-100 bg-brand-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
-                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-user-shield text-amber-600"></i> Persetujuan Akun Karyawan</h3>
-                                <p class="text-xs text-slate-500 mt-1">Akun baru tidak dapat masuk ke sistem sebelum disetujui Administrator.</p>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-user-shield text-brand-600"></i> Manajemen Akun Karyawan</h3>
+                                <p class="text-xs text-slate-500 mt-1">Hanya Administrator yang dapat membuat akun baru. Tidak ada pendaftaran akun dari halaman login.</p>
                             </div>
-                            <span id="pending-users-count" class="self-start sm:self-auto bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">0 Menunggu</span>
+                            <span id="admin-users-count" class="self-start sm:self-auto bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full">0 Akun</span>
                         </div>
+
+                        <form id="admin-create-user-form" onsubmit="window.handleAdminCreateUser(event)" class="p-5 border-b border-slate-200 bg-white">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Lengkap *</label>
+                                    <input type="text" id="admin-new-user-name" required placeholder="Nama karyawan" class="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Email Login *</label>
+                                    <input type="email" id="admin-new-user-email" required placeholder="nama@perusahaan.com" class="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kata Sandi Awal *</label>
+                                    <input type="password" id="admin-new-user-password" required minlength="8" autocomplete="new-password" placeholder="Minimal 8 karakter" class="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-brand-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Ulangi Kata Sandi *</label>
+                                    <input type="password" id="admin-new-user-password-confirm" required minlength="8" autocomplete="new-password" placeholder="Ulangi kata sandi" class="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-brand-500">
+                                </div>
+                            </div>
+                            <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <p class="text-xs text-slate-500"><i class="fa-solid fa-circle-info text-brand-500 mr-1"></i>Akun yang dibuat di sini langsung berstatus <b>Aktif</b> sebagai Karyawan.</p>
+                                <button type="submit" class="bg-brand-600 text-white px-5 py-2.5 rounded-md text-sm font-bold hover:bg-brand-700 shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-user-plus"></i> Buat & Aktifkan Akun
+                                </button>
+                            </div>
+                        </form>
+
                         <div class="overflow-x-auto">
                             <table class="w-full text-left data-grid">
-                                <thead><tr><th>Nama</th><th>Email</th><th>Tanggal Daftar</th><th>Status</th><th class="text-center">Aksi Admin</th></tr></thead>
-                                <tbody id="pending-users-tbody">
-                                    <tr><td colspan="5" class="text-center text-slate-400 py-6">Belum ada akun menunggu persetujuan.</td></tr>
+                                <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Dibuat</th></tr></thead>
+                                <tbody id="admin-users-tbody">
+                                    <tr><td colspan="5" class="text-center text-slate-400 py-6">Memuat daftar akun...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1293,7 +1293,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, inMemoryPersistence, deleteUser } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Konfigurasi Firebase
@@ -1312,6 +1312,12 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = "operasional-ksa";
+
+        // Auth terpisah khusus pembuatan akun oleh Admin.
+        // Ini mencegah sesi Administrator utama terganti oleh akun yang baru dibuat.
+        const accountCreatorApp = initializeApp(firebaseConfig, 'admin-account-creator');
+        const accountCreatorAuth = getAuth(accountCreatorApp);
+        setPersistence(accountCreatorAuth, inMemoryPersistence).catch((err) => console.error('Creator Auth persistence error:', err));
 
         // --- GLOBAL UTILITIES ---
         window.formatIDR = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num || 0);
@@ -1373,9 +1379,6 @@
 
         onAuthStateChanged(auth, async (u) => {
             if (u) {
-                // Saat proses pendaftaran, jangan pernah membuka aplikasi sebelum dokumen pending selesai dibuat.
-                if (window.registrationInProgress) return;
-
                 let currentName = "Pengguna";
                 let currentEmail = u.email || "No Email";
                 if (u.email) currentName = u.email.split('@')[0];
@@ -1427,11 +1430,11 @@
                     document.getElementById('profile-modal-role').innerText = window.userRole === 'admin' ? 'Administrator' : 'Karyawan';
                     document.getElementById('btn-settings').style.display = 'flex';
 
-                    const approvalPanel = document.getElementById('admin-approval-panel');
-                    if (approvalPanel) approvalPanel.classList.toggle('hidden', window.userRole !== 'admin');
+                    const adminAccountPanel = document.getElementById('admin-account-panel');
+                    if (adminAccountPanel) adminAccountPanel.classList.toggle('hidden', window.userRole !== 'admin');
 
                     startCloudSync();
-                    if (window.userRole === 'admin') startPendingUsersSync();
+                    if (window.userRole === 'admin') startAdminUsersSync();
 
                     // Pantau status approval user yang sedang login. Jika approval dicabut, sesi langsung ditutup.
                     if (!isPrimaryAdmin) {
@@ -1454,9 +1457,9 @@
             } else {
                 window.user = null;
                 window.userRole = 'user';
-                if (window.pendingUsersUnsubscribe) {
-                    window.pendingUsersUnsubscribe();
-                    window.pendingUsersUnsubscribe = null;
+                if (window.adminUsersUnsubscribe) {
+                    window.adminUsersUnsubscribe();
+                    window.adminUsersUnsubscribe = null;
                 }
                 if (window.currentUserApprovalUnsubscribe) {
                     window.currentUserApprovalUnsubscribe();
@@ -1468,17 +1471,12 @@
                 const appScreen = document.getElementById('app-screen');
                 appScreen.classList.add('hidden');
                 appScreen.style.display = 'none';
-                const approvalPanel = document.getElementById('admin-approval-panel');
-                if (approvalPanel) approvalPanel.classList.add('hidden');
+                const adminAccountPanel = document.getElementById('admin-account-panel');
+                if (adminAccountPanel) adminAccountPanel.classList.add('hidden');
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('form-login').classList.remove('hidden');
             }
         });
-
-        window.toggleAuthMode = () => {
-            document.getElementById('form-login').classList.toggle('hidden');
-            document.getElementById('form-register').classList.toggle('hidden');
-        };
 
         window.handleLogin = async (e) => {
             e.preventDefault();
@@ -1529,136 +1527,128 @@
             }
         };
 
-        window.handleRegister = async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const oldText = btn ? btn.innerText : 'Buat Akun';
-            if(btn) { btn.innerText = "Mendaftarkan..."; btn.disabled = true; }
-            window.registrationInProgress = true;
-            try {
-                const name = document.getElementById('reg-name').value.trim();
-                const email = document.getElementById('reg-email').value.trim().toLowerCase();
-                const pass = document.getElementById('reg-password').value;
+        // --- ADMIN: PEMBUATAN & MANAJEMEN AKUN ---
+        window.adminUsersUnsubscribe = null;
 
-                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
 
-                await setDoc(doc(db, 'artifacts', appId, 'users', userCred.user.uid), {
-                    name,
-                    email,
-                    role: 'user',
-                    approved: false,
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    approvedAt: null,
-                    approvedBy: null
-                });
-
-                await signOut(auth);
-                e.target.reset();
-                document.getElementById('form-register').classList.add('hidden');
-                document.getElementById('form-login').classList.remove('hidden');
-                document.getElementById('login-email').value = email;
-                alert("PENDAFTARAN BERHASIL. Akun Anda belum aktif dan harus mendapat persetujuan Administrator terlebih dahulu.");
-            } catch (err) {
-                console.error("Register Error:", err);
-                if (err.code === 'auth/operation-not-allowed') {
-                    alert("PENDAFTARAN DIBLOKIR FIREBASE!\n\nAktifkan 'Email/Password' di menu Authentication Firebase Console.");
-                } else if (err.code === 'auth/email-already-in-use') {
-                    alert("Gagal Daftar: Email ini sudah terdaftar. Silakan tekan tombol Kembali dan lakukan Login (Masuk Sistem).");
-                } else {
-                    alert("Gagal Daftar: " + err.message);
-                }
-                if (auth.currentUser) await signOut(auth);
-            } finally {
-                window.registrationInProgress = false;
-                if(btn) { btn.innerText = oldText; btn.disabled = false; }
-            }
-        };
-
-        // --- ADMIN APPROVAL AKUN ---
-        window.pendingUsersUnsubscribe = null;
-
-        function startPendingUsersSync() {
+        function startAdminUsersSync() {
             if (window.userRole !== 'admin') return;
-            if (window.pendingUsersUnsubscribe) window.pendingUsersUnsubscribe();
+            if (window.adminUsersUnsubscribe) window.adminUsersUnsubscribe();
 
             const usersRef = collection(db, 'artifacts', appId, 'users');
-            window.pendingUsersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
-                const pendingUsers = [];
-                snapshot.forEach((d) => {
-                    const data = d.data();
-                    if (data.approved === false || data.status === 'pending') pendingUsers.push({ id: d.id, ...data });
-                });
-                pendingUsers.sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
-                renderPendingUsers(pendingUsers);
+            window.adminUsersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
+                const users = [];
+                snapshot.forEach((d) => users.push({ id: d.id, ...d.data() }));
+                users.sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+                renderAdminUsers(users);
             }, (err) => {
-                console.error('Pending users sync error:', err);
-                const tbody = document.getElementById('pending-users-tbody');
-                if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-6">Gagal membaca daftar pendaftar. Periksa Firestore Rules.</td></tr>';
+                console.error('Admin users sync error:', err);
+                const tbody = document.getElementById('admin-users-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-6">Gagal membaca daftar akun. Periksa Firestore Rules.</td></tr>';
             });
         }
 
-        function renderPendingUsers(users) {
-            const tbody = document.getElementById('pending-users-tbody');
-            const counter = document.getElementById('pending-users-count');
+        function renderAdminUsers(users) {
+            const tbody = document.getElementById('admin-users-tbody');
+            const counter = document.getElementById('admin-users-count');
             if (!tbody || !counter) return;
-            counter.innerText = `${users.length} Menunggu`;
+            counter.innerText = `${users.length} Akun`;
             if (!users.length) {
-                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-6">Belum ada akun menunggu persetujuan.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-6">Belum ada akun karyawan.</td></tr>';
                 return;
             }
             tbody.innerHTML = users.map(u => {
                 const dt = u.createdAt ? new Date(u.createdAt).toLocaleString('id-ID') : '-';
                 const safeName = escapeHtml(u.name || 'Tanpa Nama');
                 const safeEmail = escapeHtml(u.email || '-');
+                const role = u.role === 'admin' ? 'Administrator' : 'Karyawan';
+                const active = u.approved === true && u.status === 'approved';
+                const status = active
+                    ? '<span class="px-2 py-1 rounded bg-green-100 text-green-700 text-[11px] font-bold uppercase">Aktif</span>'
+                    : '<span class="px-2 py-1 rounded bg-slate-100 text-slate-600 text-[11px] font-bold uppercase">Tidak Aktif</span>';
                 return `<tr>
                     <td class="font-semibold">${safeName}</td>
                     <td>${safeEmail}</td>
+                    <td>${role}</td>
+                    <td>${status}</td>
                     <td>${dt}</td>
-                    <td><span class="px-2 py-1 rounded bg-amber-100 text-amber-700 text-[11px] font-bold uppercase">Menunggu</span></td>
-                    <td class="text-center whitespace-nowrap">
-                        <button onclick="window.approveUser('${u.id}')" class="px-3 py-1.5 rounded bg-green-600 text-white text-xs font-bold hover:bg-green-700 mr-1"><i class="fa-solid fa-check mr-1"></i>Setujui</button>
-                        <button onclick="window.rejectUser('${u.id}')" class="px-3 py-1.5 rounded bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100"><i class="fa-solid fa-xmark mr-1"></i>Tolak</button>
-                    </td>
                 </tr>`;
             }).join('');
         }
 
-        function escapeHtml(value) {
-            return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
-        }
+        window.handleAdminCreateUser = async (e) => {
+            e.preventDefault();
+            if (window.userRole !== 'admin' || !window.user) {
+                alert('Akses ditolak. Hanya Administrator yang dapat membuat akun.');
+                return;
+            }
 
-        window.approveUser = async (uid) => {
-            if (window.userRole !== 'admin') return alert('Akses ditolak. Hanya Administrator yang dapat menyetujui akun.');
-            if (!confirm('Setujui akun ini agar dapat masuk ke sistem?')) return;
+            const btn = e.target.querySelector('button[type="submit"]');
+            const oldHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Membuat Akun...';
+            }
+
+            let createdUser = null;
+            let profileSaved = false;
             try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', uid), {
+                const name = document.getElementById('admin-new-user-name').value.trim();
+                const email = document.getElementById('admin-new-user-email').value.trim().toLowerCase();
+                const pass = document.getElementById('admin-new-user-password').value;
+                const confirmPass = document.getElementById('admin-new-user-password-confirm').value;
+
+                if (!name) throw new Error('Nama karyawan wajib diisi.');
+                if (pass.length < 8) throw new Error('Kata sandi minimal 8 karakter.');
+                if (pass !== confirmPass) throw new Error('Konfirmasi kata sandi tidak sama.');
+
+                // Buat Firebase Auth user pada instance Auth terpisah agar Admin tetap login.
+                const userCred = await createUserWithEmailAndPassword(accountCreatorAuth, email, pass);
+                createdUser = userCred.user;
+
+                const now = new Date().toISOString();
+                const adminEmail = window.user.email || 'admin';
+                await setDoc(doc(db, 'artifacts', appId, 'users', createdUser.uid), {
+                    name,
+                    email,
+                    role: 'user',
                     approved: true,
                     status: 'approved',
-                    approvedAt: new Date().toISOString(),
-                    approvedBy: window.user?.email || 'admin'
+                    createdAt: now,
+                    createdBy: adminEmail,
+                    approvedAt: now,
+                    approvedBy: adminEmail
                 });
-                alert('Akun berhasil disetujui dan sekarang dapat masuk ke sistem.');
-            } catch (err) {
-                console.error(err);
-                alert('Gagal menyetujui akun: ' + err.message);
-            }
-        };
+                profileSaved = true;
 
-        window.rejectUser = async (uid) => {
-            if (window.userRole !== 'admin') return alert('Akses ditolak. Hanya Administrator yang dapat menolak akun.');
-            if (!confirm('Tolak pendaftaran akun ini? Akun tetap tidak dapat masuk.')) return;
-            try {
-                await updateDoc(doc(db, 'artifacts', appId, 'users', uid), {
-                    approved: false,
-                    status: 'rejected',
-                    rejectedAt: new Date().toISOString(),
-                    rejectedBy: window.user?.email || 'admin'
-                });
-                alert('Pendaftaran akun ditolak.');
+                await signOut(accountCreatorAuth);
+                e.target.reset();
+                alert('Akun karyawan berhasil dibuat dan langsung aktif. Karyawan sekarang dapat masuk dari halaman Login.');
             } catch (err) {
-                console.error(err);
-                alert('Gagal menolak akun: ' + err.message);
+                console.error('Admin Create User Error:', err);
+
+                // Jika Auth user sudah tercipta tetapi profil Firestore gagal, hapus kembali agar tidak ada akun yatim.
+                if (createdUser && !profileSaved) {
+                    try { await deleteUser(createdUser); } catch (rollbackErr) { console.error('Rollback Auth user gagal:', rollbackErr); }
+                }
+                try { if (accountCreatorAuth.currentUser) await signOut(accountCreatorAuth); } catch (_) {}
+
+                if (err.code === 'auth/email-already-in-use') {
+                    alert('Gagal: Email tersebut sudah digunakan oleh akun lain.');
+                } else if (err.code === 'auth/invalid-email') {
+                    alert('Gagal: Format email tidak valid.');
+                } else if (err.code === 'auth/weak-password') {
+                    alert('Gagal: Kata sandi terlalu lemah. Gunakan minimal 8 karakter.');
+                } else if (err.code === 'auth/operation-not-allowed') {
+                    alert('Gagal: Email/Password Authentication belum diaktifkan di Firebase Console.');
+                } else {
+                    alert('Gagal membuat akun: ' + (err.message || err));
+                }
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = oldHtml; }
             }
         };
 
