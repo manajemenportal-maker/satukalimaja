@@ -52,6 +52,15 @@
         .data-grid th { background-color: #f8fafc; color: #475569; font-weight: 600; padding: 10px 16px; border-bottom: 2px solid #e2e8f0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
         .data-grid td { padding: 10px 16px; border-bottom: 1px solid #f1f5f9; font-size: 13px; color: #334155; vertical-align: middle; }
         .data-grid tbody tr:hover { background-color: #f1f6ff; cursor: pointer; }
+
+        /* Nilai Potensi Proyek: angka selalu menyesuaikan lebar kartu */
+        #dash-prospek {
+            display: inline-block;
+            max-width: 100%;
+            white-space: nowrap;
+            line-height: 1.15;
+            transform-origin: left center;
+        }
     </style>
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden">
@@ -67,8 +76,8 @@
     <div id="auth-screen" class="fixed inset-0 bg-brand-950 flex flex-col items-center justify-center p-4 z-[9999] hidden">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative">
             <div class="p-8 text-center bg-slate-50 border-b border-slate-100">
-                <div class="w-16 h-16 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center mx-auto mb-3 text-3xl">
-                    <i class="fa-solid fa-shield-halved"></i>
+                <div class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4 bg-white shadow-md border-2 border-slate-200 overflow-hidden">
+                    <img src="data:image/jpeg;base64,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" alt="Logo Kalimaja Surya Alam" class="w-full h-full object-cover">
                 </div>
                 <h2 class="text-2xl font-bold text-slate-800">Kalimaja ERP</h2>
                 <p class="text-sm text-slate-500 mt-1">Sistem Operasional & Keuangan Terpusat</p>
@@ -85,7 +94,10 @@
                     <input type="password" id="login-password" required placeholder="••••••••" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
                 </div>
                 <button type="submit" class="w-full bg-brand-600 text-white p-3 rounded-xl font-bold hover:bg-brand-700 shadow-md transition-colors">Masuk Sistem</button>
-                <p class="text-center text-sm text-slate-500 mt-4">Belum punya akun? <button type="button" onclick="window.toggleAuthMode()" class="text-brand-600 font-bold hover:underline">Daftar Karyawan Baru</button></p>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm mt-4">
+                    <button type="button" onclick="window.handlePasswordReset()" class="text-brand-600 font-bold hover:underline">Lupa kata sandi?</button>
+                    <span class="text-slate-500">Belum punya akun? <button type="button" onclick="window.toggleAuthMode()" class="text-brand-600 font-bold hover:underline">Daftar Karyawan Baru</button></span>
+                </div>
             </form>
 
             <!-- Register Form (Karyawan Saja) -->
@@ -101,6 +113,11 @@
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1">Buat Kata Sandi</label>
                     <input type="password" id="reg-password" required minlength="6" placeholder="Minimal 6 karakter" class="w-full border border-slate-300 p-3 rounded-lg text-sm focus:border-brand-500 outline-none">
+                </div>
+                
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-amber-800 flex gap-2">
+                    <i class="fa-solid fa-circle-info mt-0.5"></i>
+                    <span>Setelah mendaftar, akun berstatus <b>Menunggu Persetujuan Admin</b> dan belum dapat digunakan untuk masuk.</span>
                 </div>
                 
                 <div class="flex gap-3 pt-2">
@@ -250,7 +267,26 @@
                         <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden">
                             <div class="absolute right-0 top-0 w-16 h-16 bg-amber-50 rounded-bl-full -z-0"></div>
                             <span class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2 z-10 flex items-center gap-1.5"><i class="fa-solid fa-file-contract text-amber-500"></i> Potensi Proyek</span>
-                            <span id="dash-prospek" class="text-2xl font-bold text-amber-600 z-10">Rp 0</span>
+                            <span id="dash-prospek" class="font-bold text-amber-600 z-10">Rp 0</span>
+                        </div>
+                    </div>
+
+                    <!-- ADMIN: PERSETUJUAN AKUN BARU -->
+                    <div id="admin-approval-panel" class="hidden bg-white rounded-xl shadow-sm border border-amber-200 overflow-hidden">
+                        <div class="p-5 border-b border-amber-100 bg-amber-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-user-shield text-amber-600"></i> Persetujuan Akun Karyawan</h3>
+                                <p class="text-xs text-slate-500 mt-1">Akun baru tidak dapat masuk ke sistem sebelum disetujui Administrator.</p>
+                            </div>
+                            <span id="pending-users-count" class="self-start sm:self-auto bg-amber-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">0 Menunggu</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left data-grid">
+                                <thead><tr><th>Nama</th><th>Email</th><th>Tanggal Daftar</th><th>Status</th><th class="text-center">Aksi Admin</th></tr></thead>
+                                <tbody id="pending-users-tbody">
+                                    <tr><td colspan="5" class="text-center text-slate-400 py-6">Belum ada akun menunggu persetujuan.</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
@@ -1257,7 +1293,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, getDoc, onSnapshot, addDoc, updateDoc, deleteDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Konfigurasi Firebase
@@ -1336,48 +1372,85 @@
 
         onAuthStateChanged(auth, async (u) => {
             if (u) {
-                window.user = u;
-                document.getElementById('auth-screen').classList.add('hidden');
-                document.getElementById('auth-screen').style.display = 'none';
-                document.getElementById('app-screen').classList.remove('hidden');
-                document.getElementById('app-screen').style.display = 'flex';
-                
+                // Saat proses pendaftaran, jangan pernah membuka aplikasi sebelum dokumen pending selesai dibuat.
+                if (window.registrationInProgress) return;
+
                 let currentName = "Pengguna";
                 let currentEmail = u.email || "No Email";
                 if (u.email) currentName = u.email.split('@')[0];
-                
-                window.userRole = (u.email === 'irsukin@gmail.com') ? 'admin' : 'user';
+
+                const isPrimaryAdmin = (u.email || '').toLowerCase() === 'irsukin@gmail.com';
+                window.userRole = isPrimaryAdmin ? 'admin' : 'user';
 
                 try {
-                    const userDoc = await getDoc(doc(db, 'artifacts', appId, 'users', u.uid));
-                    if (userDoc.exists()) {
-                        currentName = userDoc.data().name || currentName;
-                    } 
-                    
+                    const userRef = doc(db, 'artifacts', appId, 'users', u.uid);
+                    const userDoc = await getDoc(userRef);
+                    const userData = userDoc.exists() ? userDoc.data() : null;
+
+                    // Admin utama selalu dapat masuk. Akun baru wajib punya approved === true.
+                    // Akun lama yang sudah ada sebelum fitur approval dan belum punya field approved tetap kompatibel.
+                    if (!isPrimaryAdmin) {
+                        if (!userData) {
+                            alert("AKSES DITOLAK: Data akun belum terdaftar/terverifikasi oleh Administrator.");
+                            await signOut(auth);
+                            return;
+                        }
+                        if (userData.approved === false || userData.status === 'pending') {
+                            alert("AKUN BELUM AKTIF. Pendaftaran Anda masih menunggu persetujuan Administrator.");
+                            await signOut(auth);
+                            return;
+                        }
+                        if (userData.status === 'rejected') {
+                            alert("AKSES DITOLAK: Pendaftaran akun ini tidak disetujui Administrator.");
+                            await signOut(auth);
+                            return;
+                        }
+                    }
+
+                    window.user = u;
+                    if (userData?.name) currentName = userData.name;
+                    if (userData?.role === 'admin' && userData?.approved === true) window.userRole = 'admin';
+
+                    document.getElementById('auth-screen').classList.add('hidden');
+                    document.getElementById('auth-screen').style.display = 'none';
+                    document.getElementById('app-screen').classList.remove('hidden');
+                    document.getElementById('app-screen').style.display = 'flex';
+
                     document.getElementById('display-user-name').innerText = currentName;
                     document.getElementById('display-user-initial').innerText = currentName.charAt(0).toUpperCase();
                     document.getElementById('display-user-role').innerText = window.userRole === 'admin' ? 'Administrator' : 'Karyawan';
-                    
                     document.getElementById('header-user-name').innerText = currentName;
                     document.getElementById('profile-modal-name').innerText = currentName;
                     document.getElementById('profile-modal-email').innerText = currentEmail;
                     document.getElementById('profile-modal-initial').innerText = currentName.charAt(0).toUpperCase();
                     document.getElementById('profile-modal-role').innerText = window.userRole === 'admin' ? 'Administrator' : 'Karyawan';
+                    document.getElementById('btn-settings').style.display = 'flex';
 
-                    document.getElementById('btn-settings').style.display = 'flex'; // Selalu tampil untuk admin/user sesuai setting sebelumnya
-                } catch (e) { console.error("Error fetching user data:", e); }
-                
-                startCloudSync();
+                    const approvalPanel = document.getElementById('admin-approval-panel');
+                    if (approvalPanel) approvalPanel.classList.toggle('hidden', window.userRole !== 'admin');
+
+                    startCloudSync();
+                    if (window.userRole === 'admin') startPendingUsersSync();
+                } catch (e) {
+                    console.error("Error fetching user data:", e);
+                    alert("Gagal memverifikasi status akun. Silakan coba masuk kembali.");
+                    await signOut(auth);
+                }
             } else {
                 window.user = null;
+                window.userRole = 'user';
+                if (window.pendingUsersUnsubscribe) {
+                    window.pendingUsersUnsubscribe();
+                    window.pendingUsersUnsubscribe = null;
+                }
                 const authScreen = document.getElementById('auth-screen');
                 authScreen.classList.remove('hidden');
                 authScreen.style.display = 'flex';
-                
                 const appScreen = document.getElementById('app-screen');
                 appScreen.classList.add('hidden');
                 appScreen.style.display = 'none';
-                
+                const approvalPanel = document.getElementById('admin-approval-panel');
+                if (approvalPanel) approvalPanel.classList.add('hidden');
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('form-login').classList.remove('hidden');
             }
@@ -1394,28 +1467,10 @@
             const oldText = btn ? btn.innerText : 'Masuk Sistem';
             if(btn) { btn.innerText = "Memeriksa..."; btn.disabled = true; }
             try {
-                const email = document.getElementById('login-email').value.trim();
+                const email = document.getElementById('login-email').value.trim().toLowerCase();
                 const pass = document.getElementById('login-password').value;
-                
-                try {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } catch (err) {
-                    if (email === 'irsukin@gmail.com' && pass === 'Sioux537yakin@' && (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential')) {
-                        try {
-                            const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-                            await setDoc(doc(db, 'artifacts', appId, 'users', userCred.user.uid), {
-                                name: 'Bpk. Irsukin (Admin)', email: email, role: 'admin', createdAt: new Date().toISOString()
-                            });
-                        } catch (createErr) {
-                            if (createErr.code === 'auth/email-already-in-use') {
-                                throw new Error("Akun irsukin@gmail.com sudah ada, tetapi sandinya tidak cocok! Solusi: Buka Firebase Console > Authentication > Hapus akun irsukin, lalu coba masuk lagi di sini.");
-                            }
-                            throw createErr;
-                        }
-                    } else {
-                        throw err; 
-                    }
-                }
+
+                await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
                 console.error("Login Error:", err);
                 if (err.code === 'auth/operation-not-allowed') {
@@ -1430,21 +1485,61 @@
             }
         };
 
+        window.handlePasswordReset = async () => {
+            const emailInput = document.getElementById('login-email');
+            const email = emailInput.value.trim().toLowerCase();
+
+            if (!email) {
+                alert("Masukkan email akun terlebih dahulu, lalu klik 'Lupa kata sandi?'.");
+                emailInput.focus();
+                return;
+            }
+
+            try {
+                await sendPasswordResetEmail(auth, email);
+                alert("Tautan untuk membuat kata sandi baru telah dikirim ke " + email + ". Silakan periksa Kotak Masuk atau folder Spam.");
+            } catch (err) {
+                console.error("Password Reset Error:", err);
+                if (err.code === 'auth/invalid-email') {
+                    alert("Format email tidak valid.");
+                } else if (err.code === 'auth/too-many-requests') {
+                    alert("Permintaan terlalu banyak. Silakan coba lagi beberapa saat lagi.");
+                } else {
+                    alert("Permintaan reset kata sandi belum berhasil: " + err.message);
+                }
+            }
+        };
+
         window.handleRegister = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
             const oldText = btn ? btn.innerText : 'Buat Akun';
             if(btn) { btn.innerText = "Mendaftarkan..."; btn.disabled = true; }
+            window.registrationInProgress = true;
             try {
                 const name = document.getElementById('reg-name').value.trim();
-                const email = document.getElementById('reg-email').value.trim();
+                const email = document.getElementById('reg-email').value.trim().toLowerCase();
                 const pass = document.getElementById('reg-password').value;
-                
+
                 const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-                
+
                 await setDoc(doc(db, 'artifacts', appId, 'users', userCred.user.uid), {
-                    name: name, email: email, role: 'user', createdAt: new Date().toISOString()
+                    name,
+                    email,
+                    role: 'user',
+                    approved: false,
+                    status: 'pending',
+                    createdAt: new Date().toISOString(),
+                    approvedAt: null,
+                    approvedBy: null
                 });
+
+                await signOut(auth);
+                e.target.reset();
+                document.getElementById('form-register').classList.add('hidden');
+                document.getElementById('form-login').classList.remove('hidden');
+                document.getElementById('login-email').value = email;
+                alert("PENDAFTARAN BERHASIL. Akun Anda belum aktif dan harus mendapat persetujuan Administrator terlebih dahulu.");
             } catch (err) {
                 console.error("Register Error:", err);
                 if (err.code === 'auth/operation-not-allowed') {
@@ -1454,8 +1549,97 @@
                 } else {
                     alert("Gagal Daftar: " + err.message);
                 }
+                if (auth.currentUser) await signOut(auth);
             } finally {
+                window.registrationInProgress = false;
                 if(btn) { btn.innerText = oldText; btn.disabled = false; }
+            }
+        };
+
+        // --- ADMIN APPROVAL AKUN ---
+        window.pendingUsersUnsubscribe = null;
+
+        function startPendingUsersSync() {
+            if (window.userRole !== 'admin') return;
+            if (window.pendingUsersUnsubscribe) window.pendingUsersUnsubscribe();
+
+            const usersRef = collection(db, 'artifacts', appId, 'users');
+            window.pendingUsersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
+                const pendingUsers = [];
+                snapshot.forEach((d) => {
+                    const data = d.data();
+                    if (data.approved === false || data.status === 'pending') pendingUsers.push({ id: d.id, ...data });
+                });
+                pendingUsers.sort((a,b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+                renderPendingUsers(pendingUsers);
+            }, (err) => {
+                console.error('Pending users sync error:', err);
+                const tbody = document.getElementById('pending-users-tbody');
+                if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-6">Gagal membaca daftar pendaftar. Periksa Firestore Rules.</td></tr>';
+            });
+        }
+
+        function renderPendingUsers(users) {
+            const tbody = document.getElementById('pending-users-tbody');
+            const counter = document.getElementById('pending-users-count');
+            if (!tbody || !counter) return;
+            counter.innerText = `${users.length} Menunggu`;
+            if (!users.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-slate-400 py-6">Belum ada akun menunggu persetujuan.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = users.map(u => {
+                const dt = u.createdAt ? new Date(u.createdAt).toLocaleString('id-ID') : '-';
+                const safeName = escapeHtml(u.name || 'Tanpa Nama');
+                const safeEmail = escapeHtml(u.email || '-');
+                return `<tr>
+                    <td class="font-semibold">${safeName}</td>
+                    <td>${safeEmail}</td>
+                    <td>${dt}</td>
+                    <td><span class="px-2 py-1 rounded bg-amber-100 text-amber-700 text-[11px] font-bold uppercase">Menunggu</span></td>
+                    <td class="text-center whitespace-nowrap">
+                        <button onclick="window.approveUser('${u.id}')" class="px-3 py-1.5 rounded bg-green-600 text-white text-xs font-bold hover:bg-green-700 mr-1"><i class="fa-solid fa-check mr-1"></i>Setujui</button>
+                        <button onclick="window.rejectUser('${u.id}')" class="px-3 py-1.5 rounded bg-red-50 text-red-600 border border-red-200 text-xs font-bold hover:bg-red-100"><i class="fa-solid fa-xmark mr-1"></i>Tolak</button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function escapeHtml(value) {
+            return String(value).replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+        }
+
+        window.approveUser = async (uid) => {
+            if (window.userRole !== 'admin') return alert('Akses ditolak. Hanya Administrator yang dapat menyetujui akun.');
+            if (!confirm('Setujui akun ini agar dapat masuk ke sistem?')) return;
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', uid), {
+                    approved: true,
+                    status: 'approved',
+                    approvedAt: new Date().toISOString(),
+                    approvedBy: window.user?.email || 'admin'
+                });
+                alert('Akun berhasil disetujui dan sekarang dapat masuk ke sistem.');
+            } catch (err) {
+                console.error(err);
+                alert('Gagal menyetujui akun: ' + err.message);
+            }
+        };
+
+        window.rejectUser = async (uid) => {
+            if (window.userRole !== 'admin') return alert('Akses ditolak. Hanya Administrator yang dapat menolak akun.');
+            if (!confirm('Tolak pendaftaran akun ini? Akun tetap tidak dapat masuk.')) return;
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', uid), {
+                    approved: false,
+                    status: 'rejected',
+                    rejectedAt: new Date().toISOString(),
+                    rejectedBy: window.user?.email || 'admin'
+                });
+                alert('Pendaftaran akun ditolak.');
+            } catch (err) {
+                console.error(err);
+                alert('Gagal menolak akun: ' + err.message);
             }
         };
 
@@ -1587,6 +1771,42 @@
         }
 
         // --- UI RENDER FUNCTIONS ---
+        // Menjaga nilai Potensi Proyek tetap utuh di dalam frame, berapa pun nominalnya.
+        window.fitPotentialValue = () => {
+            const el = document.getElementById('dash-prospek');
+            if (!el || !el.parentElement) return;
+
+            const parent = el.parentElement;
+            const ps = window.getComputedStyle(parent);
+            const available = Math.max(1, parent.clientWidth
+                - (parseFloat(ps.paddingLeft) || 0)
+                - (parseFloat(ps.paddingRight) || 0));
+
+            const maxSize = 24;
+            const minSize = 9;
+            el.style.fontSize = maxSize + 'px';
+            el.style.transform = 'none';
+            el.style.maxWidth = 'none';
+            el.style.width = 'max-content';
+
+            // Turunkan ukuran font secara proporsional sampai muat.
+            const naturalWidth = Math.max(1, el.scrollWidth);
+            let targetSize = Math.min(maxSize, maxSize * available / naturalWidth);
+            targetSize = Math.max(minSize, targetSize);
+            el.style.fontSize = targetSize + 'px';
+
+            // Untuk angka yang ekstrem sangat panjang, kompres horizontal sebagai pengaman terakhir
+            // supaya tidak pernah keluar dari frame dan angka tetap terlihat lengkap.
+            const finalWidth = Math.max(1, el.scrollWidth);
+            if (finalWidth > available) {
+                el.style.transform = `scaleX(${available / finalWidth})`;
+            }
+        };
+
+        window.addEventListener('resize', () => {
+            window.requestAnimationFrame(() => window.fitPotentialValue());
+        });
+
         window.renderDashboard = () => {
             let in_ = 0, out_ = 0;
             window.transactions.forEach(t => { if(t.type==='Pemasukan') in_ += t.amount; else out_ += t.amount; });
@@ -1597,6 +1817,7 @@
             
             const potential = window.deals.filter(d=>d.status!=='Selesai').reduce((s,d)=>s+d.value,0);
             document.getElementById('dash-prospek').innerText = window.formatIDR(potential);
+            window.requestAnimationFrame(() => window.fitPotentialValue());
 
             const txCont = document.getElementById('dash-recent-tx');
             const sortedTx = [...window.transactions].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0, 5);
