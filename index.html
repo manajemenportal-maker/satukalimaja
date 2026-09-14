@@ -494,7 +494,7 @@
                     <div class="flex justify-between items-end mb-4">
                         <div>
                             <h2 class="text-2xl font-bold text-slate-800">Purchase Order (PO)</h2>
-                            <p class="text-sm text-slate-500 mt-1">Kelola pesanan pembelian ke Supplier/Mitra.</p>
+                            <p class="text-sm text-slate-500 mt-1">Karyawan dapat membuat PO. PO baru berlaku setelah disetujui Admin Utama.</p>
                         </div>
                         <button onclick="window.togglePOModal(true)" class="bg-brand-600 text-white px-4 py-2.5 rounded-md text-sm font-bold shadow-sm flex items-center gap-2 hover:bg-brand-700 transition-colors">
                             <i class="fa-solid fa-plus"></i> Buat PO Baru
@@ -1565,6 +1565,12 @@
             return true;
         }
 
+        // Admin Utama adalah satu-satunya akun yang berwenang mengesahkan Purchase Order.
+        function isPrimaryAdminAccount() {
+            return !!(window.user && (window.user.email || '').toLowerCase() === 'irsukin@gmail.com');
+        }
+        window.isPrimaryAdminAccount = isPrimaryAdminAccount;
+
         function startAdminUsersSync() {
             if (window.userRole !== 'admin') return;
             if (window.adminUsersUnsubscribe) window.adminUsersUnsubscribe();
@@ -2090,19 +2096,63 @@ Lanjutkan?`);
                 tb.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 italic">Belum ada dokumen PO</td></tr>`;
                 return;
             }
-            tb.innerHTML = window.purchaseOrders.map(po => `
+
+            const primaryAdmin = isPrimaryAdminAccount();
+            const currentUid = window.user?.uid || '';
+
+            tb.innerHTML = window.purchaseOrders.map(po => {
+                const approvalState = po.approvalStatus || (po.approved === true ? 'approved' : 'pending');
+                const isApproved = po.approved === true && approvalState === 'approved';
+                const isRejected = approvalState === 'rejected';
+                const isOwner = !!currentUid && po.createdByUid === currentUid;
+
+                let statusHtml;
+                if (isApproved) {
+                    statusHtml = `<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase border bg-green-100 text-green-700 border-green-200"><i class="fa-solid fa-circle-check mr-1"></i>BERLAKU / DISETUJUI</span>`;
+                } else if (isRejected) {
+                    statusHtml = `<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase border bg-red-100 text-red-700 border-red-200"><i class="fa-solid fa-circle-xmark mr-1"></i>DITOLAK</span>`;
+                } else {
+                    statusHtml = `<span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase border bg-amber-100 text-amber-700 border-amber-200"><i class="fa-solid fa-clock mr-1"></i>MENUNGGU APPROVAL</span>`;
+                }
+
+                const editBtn = (primaryAdmin || isOwner)
+                    ? `<button onclick="window.openEditPOModal('${po.id}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white rounded border border-amber-200 font-bold text-[10px] transition-colors shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>`
+                    : '';
+
+                const approveBtn = primaryAdmin && !isApproved
+                    ? `<button onclick="window.approvePO('${po.id}')" class="px-2.5 py-1.5 bg-green-50 text-green-700 hover:bg-green-600 hover:text-white rounded border border-green-200 font-bold text-[10px] transition-colors shadow-sm" title="Setujui PO"><i class="fa-solid fa-check-double mr-1"></i>Setujui</button>`
+                    : '';
+
+                const rejectBtn = primaryAdmin && !isApproved && !isRejected
+                    ? `<button onclick="window.rejectPO('${po.id}')" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded border border-red-200 font-bold text-[10px] transition-colors shadow-sm" title="Tolak PO"><i class="fa-solid fa-xmark"></i></button>`
+                    : '';
+
+                const revokeBtn = primaryAdmin && isApproved
+                    ? `<button onclick="window.revokePOApproval('${po.id}')" class="px-2.5 py-1.5 bg-slate-50 text-slate-600 hover:bg-slate-600 hover:text-white rounded border border-slate-200 font-bold text-[10px] transition-colors shadow-sm" title="Batalkan approval"><i class="fa-solid fa-rotate-left"></i></button>`
+                    : '';
+
+                const deleteBtn = window.userRole === 'admin'
+                    ? `<button onclick="window.deletePO('${po.id}')" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded border border-red-200 font-bold text-[10px] transition-colors shadow-sm" title="Hapus"><i class="fa-solid fa-trash"></i></button>`
+                    : '';
+
+                const creator = escapeHtml(po.createdByEmail || '-');
+                const approvedBy = escapeHtml(po.approvedBy || '');
+                const approvalNote = isApproved
+                    ? `<div class="text-[9px] text-green-600 mt-1">Disetujui: ${approvedBy || 'Admin Utama'}</div>`
+                    : `<div class="text-[9px] text-slate-400 mt-1">Dibuat: ${creator}</div>`;
+
+                return `
                 <tr class="border-b hover:bg-slate-50 transition-colors cursor-pointer" onclick="window.printPO('${po.id}')">
-                    <td class="p-4 font-bold text-brand-600 font-mono text-xs">${po.poNum}</td>
-                    <td class="p-4 font-bold text-slate-800">${window.suppliers.find(c=>String(c.id)===String(po.clientId))?.name || '...'}</td>
-                    <td class="p-4 text-slate-500 text-[11px]"><i class="fa-regular fa-calendar mr-1"></i> ${po.date}</td>
+                    <td class="p-4 font-bold text-brand-600 font-mono text-xs">${escapeHtml(po.poNum || '-')}</td>
+                    <td class="p-4 font-bold text-slate-800">${escapeHtml(window.suppliers.find(c=>String(c.id)===String(po.clientId))?.name || '...')}</td>
+                    <td class="p-4 text-slate-500 text-[11px]"><i class="fa-regular fa-calendar mr-1"></i> ${escapeHtml(po.date || '-')}</td>
                     <td class="p-4 text-right font-bold text-slate-700">${window.formatIDR(po.value)}</td>
-                    <td class="p-4 text-center"><span class="px-2.5 py-1 rounded text-[9px] font-bold uppercase border bg-blue-100 text-blue-700 border-blue-200">${po.status}</span></td>
-                    <td class="p-4 text-center flex justify-center gap-1.5 border-t-0" onclick="event.stopPropagation();">
-                        <button onclick="window.openEditPOModal('${po.id}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-600 hover:bg-amber-500 hover:text-white rounded border border-amber-200 font-bold text-[10px] transition-colors shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                        <button onclick="window.deletePO('${po.id}')" class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-500 hover:text-white rounded border border-red-200 font-bold text-[10px] transition-colors shadow-sm"><i class="fa-solid fa-trash"></i></button>
+                    <td class="p-4 text-center">${statusHtml}${approvalNote}</td>
+                    <td class="p-4 text-center border-t-0" onclick="event.stopPropagation();">
+                        <div class="flex flex-wrap justify-center gap-1.5">${approveBtn}${rejectBtn}${revokeBtn}${editBtn}${deleteBtn}</div>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
         };
 
         window.renderInvoices = () => {
@@ -2351,48 +2401,161 @@ Lanjutkan?`);
                         price: parseFloat(row.querySelector('.item-price').value) || 0
                     });
                 });
-                
+
                 const sub = items.reduce((s,i) => s + (i.qty*i.price), 0);
                 const tax = parseFloat(document.getElementById('po-tax-rate')?.value) || 0;
                 const grandTotal = sub + (sub * (tax / 100));
-                
                 const poId = document.getElementById('po-id').value;
-                
+                const primaryAdmin = isPrimaryAdminAccount();
+                const now = new Date().toISOString();
+
+                const baseData = {
+                    title: document.getElementById('po-title').value,
+                    clientId: document.getElementById('po-client').value,
+                    items,
+                    notes: document.getElementById('po-notes').value,
+                    terms: document.getElementById('po-terms').value,
+                    subtotal: sub,
+                    taxRate: tax,
+                    value: grandTotal,
+                    updatedAt: now
+                };
+
                 if (poId) {
-                    const data = {
-                        title: document.getElementById('po-title').value,
-                        clientId: document.getElementById('po-client').value,
-                        items: items, 
-                        notes: document.getElementById('po-notes').value, 
-                        terms: document.getElementById('po-terms').value,
-                        subtotal: sub, 
-                        taxRate: tax,
-                        value: grandTotal
-                    };
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', poId), data);
+                    const existing = window.purchaseOrders.find(x => String(x.id) === String(poId));
+                    if (!existing) throw new Error('PO tidak ditemukan.');
+
+                    if (!primaryAdmin && existing.createdByUid !== window.user.uid) {
+                        throw new Error('Anda hanya dapat mengubah PO yang Anda buat sendiri.');
+                    }
+
+                    if (primaryAdmin) {
+                        // Edit oleh Admin Utama tidak otomatis mengubah keputusan approval yang sudah ada.
+                        const existingState = existing.approvalStatus || (existing.approved === true ? 'approved' : 'pending');
+                        Object.assign(baseData, {
+                            status: existing.status || (existingState === 'approved' ? 'Diterbitkan' : 'Menunggu Approval'),
+                            approved: existing.approved === true && existingState === 'approved',
+                            approvalStatus: existingState,
+                            approvedAt: existing.approvedAt || null,
+                            approvedBy: existing.approvedBy || null,
+                            rejectedAt: existing.rejectedAt || null,
+                            rejectedBy: existing.rejectedBy || null,
+                            createdByUid: existing.createdByUid || window.user.uid,
+                            createdByEmail: existing.createdByEmail || (window.user.email || '')
+                        });
+                    } else {
+                        // Setiap perubahan oleh Karyawan harus diajukan ulang ke Admin Utama.
+                        Object.assign(baseData, {
+                            status: 'Menunggu Approval',
+                            approved: false,
+                            approvalStatus: 'pending',
+                            approvedAt: null,
+                            approvedBy: null,
+                            rejectedAt: null,
+                            rejectedBy: null,
+                            createdByUid: existing.createdByUid,
+                            createdByEmail: existing.createdByEmail || (window.user.email || '')
+                        });
+                    }
+
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', poId), baseData);
+                    alert(primaryAdmin ? 'Perubahan PO berhasil disimpan.' : 'Perubahan PO berhasil disimpan dan kembali MENUNGGU APPROVAL Admin Utama.');
                 } else {
+                    const approvedImmediately = primaryAdmin;
                     const data = {
-                        title: document.getElementById('po-title').value,
-                        clientId: document.getElementById('po-client').value,
-                        status: 'Diterbitkan',
-                        items: items, 
-                        notes: document.getElementById('po-notes').value, 
-                        terms: document.getElementById('po-terms').value,
-                        subtotal: sub, 
-                        taxRate: tax, 
-                        value: grandTotal,
+                        ...baseData,
+                        status: approvedImmediately ? 'Diterbitkan' : 'Menunggu Approval',
+                        approved: approvedImmediately,
+                        approvalStatus: approvedImmediately ? 'approved' : 'pending',
+                        approvedAt: approvedImmediately ? now : null,
+                        approvedBy: approvedImmediately ? (window.user.email || '') : null,
+                        rejectedAt: null,
+                        rejectedBy: null,
+                        createdAt: now,
+                        createdByUid: window.user.uid,
+                        createdByEmail: (window.user.email || ''),
                         date: new Date().toISOString().split('T')[0],
                         poNum: `PO-${new Date().getFullYear()}${Date.now().toString().slice(-4)}`
                     };
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'purchase_orders'), data);
+                    alert(approvedImmediately
+                        ? 'PO berhasil dibuat dan langsung BERLAKU karena dibuat oleh Admin Utama.'
+                        : 'PO berhasil dibuat. Status: MENUNGGU APPROVAL Admin Utama. PO belum berlaku dan belum dapat dicetak sebagai dokumen resmi.');
                 }
-                
+
                 window.togglePOModal(false); e.target.reset(); document.getElementById('po-id').value = '';
-            } catch (err) { 
-                console.error(err); alert(err.message); if(btn) btn.innerHTML = "Gagal"; 
-            } finally { 
-                if(btn) setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 2000); 
+            } catch (err) {
+                console.error(err); alert(err.message); if(btn) btn.innerHTML = "Gagal";
+            } finally {
+                if(btn) setTimeout(() => { btn.innerHTML = oldText; btn.disabled = false; }, 2000);
             }
+        };
+
+        // --- APPROVAL PURCHASE ORDER: KHUSUS ADMIN UTAMA ---
+        window.approvePO = async (id) => {
+            if (!isPrimaryAdminAccount()) {
+                alert('AKSES DITOLAK: Hanya Admin Utama yang dapat menyetujui Purchase Order.');
+                return;
+            }
+            const po = window.purchaseOrders.find(x => String(x.id) === String(id));
+            if (!po) return alert('PO tidak ditemukan.');
+            if (!confirm(`Setujui ${po.poNum || 'PO ini'}? Setelah disetujui, PO menjadi BERLAKU dan dapat dicetak.`)) return;
+            const now = new Date().toISOString();
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id), {
+                approved: true,
+                approvalStatus: 'approved',
+                status: 'Diterbitkan',
+                approvedAt: now,
+                approvedBy: (window.user.email || ''),
+                rejectedAt: null,
+                rejectedBy: null,
+                updatedAt: now
+            });
+            alert('PO telah DISETUJUI dan sekarang BERLAKU.');
+        };
+
+        window.rejectPO = async (id) => {
+            if (!isPrimaryAdminAccount()) {
+                alert('AKSES DITOLAK: Hanya Admin Utama yang dapat menolak Purchase Order.');
+                return;
+            }
+            const po = window.purchaseOrders.find(x => String(x.id) === String(id));
+            if (!po) return alert('PO tidak ditemukan.');
+            if (!confirm(`Tolak ${po.poNum || 'PO ini'}?`)) return;
+            const now = new Date().toISOString();
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id), {
+                approved: false,
+                approvalStatus: 'rejected',
+                status: 'Ditolak',
+                approvedAt: null,
+                approvedBy: null,
+                rejectedAt: now,
+                rejectedBy: (window.user.email || ''),
+                updatedAt: now
+            });
+            alert('PO telah ditolak. Karyawan dapat mengeditnya dan mengajukan ulang.');
+        };
+
+        window.revokePOApproval = async (id) => {
+            if (!isPrimaryAdminAccount()) {
+                alert('AKSES DITOLAK: Hanya Admin Utama yang dapat membatalkan approval Purchase Order.');
+                return;
+            }
+            const po = window.purchaseOrders.find(x => String(x.id) === String(id));
+            if (!po) return alert('PO tidak ditemukan.');
+            if (!confirm(`Batalkan approval ${po.poNum || 'PO ini'}? PO akan kembali menjadi BELUM BERLAKU.`)) return;
+            const now = new Date().toISOString();
+            await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id), {
+                approved: false,
+                approvalStatus: 'pending',
+                status: 'Menunggu Approval',
+                approvedAt: null,
+                approvedBy: null,
+                rejectedAt: null,
+                rejectedBy: null,
+                updatedAt: now
+            });
+            alert('Approval dibatalkan. PO kembali menunggu persetujuan Admin Utama.');
         };
 
         window.handleNewInvoice = async (e) => {
@@ -2865,6 +3028,14 @@ Lanjutkan?`);
         window.openEditPOModal = (id) => {
             const po = window.purchaseOrders.find(x => String(x.id) === String(id));
             if(!po) return;
+            const primaryAdmin = isPrimaryAdminAccount();
+            if (!primaryAdmin && po.createdByUid !== window.user?.uid) {
+                alert('Akses ditolak. Anda hanya dapat mengedit PO yang Anda buat sendiri.');
+                return;
+            }
+            if (!primaryAdmin && po.approved === true && (po.approvalStatus || 'approved') === 'approved') {
+                if (!confirm('PO ini sudah disetujui. Jika Anda mengeditnya, approval akan dibatalkan dan PO harus disetujui ulang oleh Admin Utama. Lanjutkan?')) return;
+            }
             const modal = document.getElementById('po-create-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
             
@@ -3225,6 +3396,12 @@ Lanjutkan?`);
 
         window.printPO = (id) => {
             const po = window.purchaseOrders.find(x => String(x.id) === String(id));
+            if (!po) return;
+            const approvalState = po.approvalStatus || (po.approved === true ? 'approved' : 'pending');
+            if (po.approved !== true || approvalState !== 'approved') {
+                alert('PO BELUM BERLAKU. Dokumen ini belum mendapat approval Admin Utama sehingga belum dapat dicetak sebagai Purchase Order resmi.');
+                return;
+            }
             const c = window.suppliers.find(x => String(x.id) === String(po.clientId)) || {name:'-', address:'-', pic:'-', phone:'-'};
             const logo = localStorage.getItem('agro_logo') || '';
             const s = window.companySettings;
