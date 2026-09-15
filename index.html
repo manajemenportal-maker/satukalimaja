@@ -1516,7 +1516,8 @@
             <div id="admin-project-detail-body" class="p-4 sm:p-6 space-y-6 bg-slate-50 max-h-[82vh] overflow-y-auto"></div>
             <div class="p-4 bg-white border-t border-slate-200 flex flex-wrap justify-between gap-3">
                 <button id="admin-project-open-workflow" class="px-4 py-2 rounded-md border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50"><i class="fa-solid fa-list-check mr-1.5"></i>Buka di Proyek</button>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <button id="admin-project-print-report" class="px-4 py-2 rounded-md bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700"><i class="fa-solid fa-file-pdf mr-1.5"></i>Cetak PDF Laporan Lengkap</button>
                     <button id="admin-project-print-quotation" class="px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-bold hover:bg-brand-700"><i class="fa-solid fa-print mr-1.5"></i>Cetak Penawaran</button>
                     <button onclick="window.closeAdminProjectDetail()" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm font-bold hover:bg-slate-900">Tutup</button>
                 </div>
@@ -2472,6 +2473,7 @@ Lanjutkan?`);
                 </div>`;
 
             document.getElementById('admin-project-open-workflow').onclick = () => { window.closeAdminProjectDetail(); window.switchTab('deals'); setTimeout(() => window.showDealDetails(id), 150); };
+            document.getElementById('admin-project-print-report').onclick = () => window.printAdminProjectReport(id);
             document.getElementById('admin-project-print-quotation').onclick = () => window.printQuotation(id);
             const modal = document.getElementById('admin-project-detail-modal');
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -4342,6 +4344,235 @@ Lanjutkan?`);
         };
 
         // --- PRINTING LOGIC ---
+        // Laporan kontrol proyek lengkap untuk Administrator. Dibuka di jendela cetak
+        // sehingga dapat langsung disimpan sebagai PDF dari dialog Print browser.
+        window.printAdminProjectReport = (id) => {
+            if (window.userRole !== 'admin') return alert('Laporan kontrol proyek hanya dapat dicetak oleh Administrator.');
+            const d = (window.deals || []).find(x => String(x.id) === String(id));
+            if (!d) return alert('Proyek / tender tidak ditemukan.');
+
+            const c = (window.clients || []).find(x => String(x.id) === String(d.clientId)) || {name:'-', address:'-', pic:'-', phone:'-', email:'-', idPelanggan:'-'};
+            const f = window.getAdminProjectFinanceDetail ? window.getAdminProjectFinanceDetail(id) : {pos:[],approvedPOs:[],pendingPOs:[],ops:[],invoices:[],approvedPO:0,pendingPO:0,operational:0,overhead:0,opsTotal:0,totalCost:0,totalInvoice:0,totalPaid:0};
+            const value = Number(d.value) || 0;
+            const subtotal = Number(d.subtotal) || 0;
+            const taxRate = d.taxRate !== undefined ? Number(d.taxRate) || 0 : 0;
+            const taxValue = Math.max(0, value - subtotal);
+            const remaining = value - (Number(f.totalCost) || 0);
+            const projected = (Number(f.totalCost) || 0) + (Number(f.pendingPO) || 0);
+            const costRatio = value > 0 ? (Number(f.totalCost) || 0) / value * 100 : 0;
+            const projectedRatio = value > 0 ? projected / value * 100 : 0;
+            const margin = value - (Number(f.totalCost) || 0);
+            const marginPct = value > 0 ? margin / value * 100 : 0;
+            const outstandingInvoice = (Number(f.totalInvoice) || 0) - (Number(f.totalPaid) || 0);
+            const poStats = window.getProjectPOStats ? window.getProjectPOStats(id) : {approvedMaterial:0,pendingMaterial:0};
+            const materialApproved = Number(poStats.approvedMaterial) || 0;
+            const materialPending = Number(poStats.pendingMaterial) || 0;
+            const materialProjected = materialApproved + materialPending;
+            const materialRatio = value > 0 ? materialProjected / value * 100 : 0;
+
+            const esc = (v) => String(v ?? '-').replace(/[&<>'"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+            const multi = (v) => esc(v || '-').replace(/\n/g, '<br>');
+            const fmt = (v) => window.formatIDR(Number(v) || 0);
+            const dt = (v) => { if (!v) return '-'; try { return new Date(v).toLocaleString('id-ID'); } catch { return esc(v); } };
+            const dateOnly = (v) => v ? esc(v) : '-';
+            const supplierName = (po) => ((window.suppliers || []).find(s => String(s.id) === String(po.clientId)) || {}).name || '-';
+            const isApproved = (po) => window.isPOApproved ? window.isPOApproved(po) : (po.approved === true && (po.approvalStatus || 'approved') === 'approved');
+            const poStatus = (po) => isApproved(po) ? 'DISETUJUI / BERLAKU' : ((po.approvalStatus || '') === 'rejected' ? 'DITOLAK' : 'MENUNGGU APPROVAL');
+            const statusClass = (ratio) => ratio >= 100 ? 'danger' : ratio >= 80 ? 'warning' : 'safe';
+            const statusText = (ratio) => ratio >= 100 ? 'KRITIS' : ratio >= 80 ? 'WARNING' : 'AMAN';
+            const generatedAt = new Date().toLocaleString('id-ID');
+            const generatedBy = window.user?.email || document.getElementById('display-user-name')?.innerText || 'Administrator';
+            const s = window.companySettings || {};
+            const displayedLogo = document.getElementById('company-logo')?.src || '';
+            const logo = displayedLogo || localStorage.getItem('agro_logo') || '';
+
+            const items = Array.isArray(d.items) ? d.items : [];
+            const itemRows = items.length ? items.map((it,i) => `<tr><td class="c">${i+1}</td><td class="desc">${multi(it.desc)}</td><td class="r">${esc(it.qty ?? 0)}</td><td class="r">${fmt(it.price)}</td><td class="r strong">${fmt((Number(it.qty)||0)*(Number(it.price)||0))}</td></tr>`).join('') : '<tr><td colspan="5" class="empty">Tidak ada rincian barang / jasa pada penawaran.</td></tr>';
+
+            const pos = [...(f.pos || [])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+            const poRows = pos.length ? pos.map((po,i) => `<tr><td class="c">${i+1}</td><td>${esc(po.poNum||'-')}</td><td>${esc(supplierName(po))}</td><td>${esc(po.costType||'-')}</td><td>${dateOnly(po.date)}</td><td class="r strong">${fmt(po.value)}</td><td class="c"><span class="pill ${isApproved(po)?'ok':((po.approvalStatus||'')==='rejected'?'no':'wait')}">${esc(poStatus(po))}</span></td></tr>`).join('') : '<tr><td colspan="7" class="empty">Belum ada Purchase Order untuk proyek ini.</td></tr>';
+
+            const ops = [...(f.ops || [])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+            const opsRows = ops.length ? ops.map((x,i) => `<tr><td class="c">${i+1}</td><td>${dateOnly(x.date)}</td><td><b>${esc(x.costGroup||'-')} - ${esc(x.category||'-')}</b><div class="sub">${multi(x.description||'-')}</div></td><td>${esc(x.payee||'-')}</td><td>${esc(x.paymentMethod||'-')}</td><td>${esc(x.receiptNo||x.referenceNo||'-')}</td><td class="r strong">${fmt(x.amount)}</td><td>${esc(x.createdByName || x.createdByEmail || '-')}</td></tr>`).join('') : '<tr><td colspan="8" class="empty">Belum ada biaya operasional / overhead untuk proyek ini.</td></tr>';
+
+            const invs = [...(f.invoices || [])].sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+            const invRows = invs.length ? invs.map((inv,i) => `<tr><td class="c">${i+1}</td><td>${esc(inv.invNum||'-')}</td><td>${dateOnly(inv.date)}</td><td class="r strong">${fmt(inv.total)}</td><td class="r">${fmt(inv.paid)}</td><td class="r">${fmt((Number(inv.total)||0)-(Number(inv.paid)||0))}</td><td class="c">${esc(inv.status||'-')}</td></tr>`).join('') : '<tr><td colspan="7" class="empty">Belum ada invoice yang dikaitkan ke proyek ini.</td></tr>';
+
+            const hist = Array.isArray(d.statusHistory) ? d.statusHistory : [];
+            const historyRows = hist.length ? hist.map((h,i) => `<tr><td class="c">${i+1}</td><td>${esc(h.from||'Awal')}</td><td>${esc(h.to||'-')}</td><td>${dt(h.at)}</td><td>${esc(h.by||'-')}</td></tr>`).join('') : '<tr><td colspan="5" class="empty">Belum ada riwayat perubahan status.</td></tr>';
+
+            // Ringkasan kategori biaya operasional/overhead.
+            const catMap = {};
+            ops.forEach(x => {
+                const k = `${x.costGroup || 'Lainnya'} / ${x.category || 'Lainnya'}`;
+                catMap[k] = (catMap[k] || 0) + (Number(x.amount) || 0);
+            });
+            const categoryRows = Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([k,v],i)=>`<tr><td class="c">${i+1}</td><td>${esc(k)}</td><td class="r strong">${fmt(v)}</td></tr>`).join('') || '<tr><td colspan="3" class="empty">Belum ada biaya operasional / overhead.</td></tr>';
+
+            const win = window.open('', '_blank');
+            if (!win) return alert('Popup cetak diblokir browser. Izinkan popup untuk website ini lalu coba lagi.');
+
+            win.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Laporan Proyek ${esc(d.invNum || d.title || '')}</title>
+            <style>
+                @page { size: A4 portrait; margin: 14mm 12mm 16mm; }
+                * { box-sizing: border-box; }
+                body { margin:0; font-family: Arial, Helvetica, sans-serif; color:#172033; font-size:10px; line-height:1.45; background:white; }
+                .report { width:100%; }
+                .page-section { page-break-before: always; }
+                .page-section.first { page-break-before: auto; }
+                .section-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #1e3a8a; padding-bottom:8px; margin-bottom:12px; }
+                .brand { display:flex; align-items:center; gap:10px; min-width:0; }
+                .logo { width:44px; height:44px; object-fit:contain; border-radius:50%; border:1px solid #e2e8f0; }
+                .company h2 { margin:0; font-size:15px; color:#172554; }
+                .company div { color:#64748b; font-size:8.5px; max-width:420px; }
+                .report-tag { text-align:right; font-size:8px; color:#64748b; }
+                .report-tag b { display:block; color:#172554; font-size:11px; margin-bottom:2px; }
+                .title { margin:12px 0 4px; font-size:21px; line-height:1.15; color:#0f172a; }
+                .subtitle { color:#64748b; font-size:10px; }
+                .badge { display:inline-block; padding:3px 7px; border-radius:999px; background:#dbeafe; color:#1d4ed8; font-weight:bold; font-size:8px; }
+                .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:12px 0; }
+                .card { border:1px solid #e2e8f0; border-radius:7px; padding:9px; min-height:54px; }
+                .card .label { color:#64748b; font-size:7.5px; font-weight:bold; text-transform:uppercase; letter-spacing:.04em; }
+                .card .value { margin-top:4px; font-size:12px; font-weight:bold; color:#0f172a; word-break:break-word; }
+                .card .hint { color:#94a3b8; font-size:7.5px; margin-top:2px; }
+                .safe { color:#15803d !important; } .warning { color:#b45309 !important; } .danger { color:#b91c1c !important; }
+                .callout { border:1px solid #e2e8f0; border-left:4px solid #1d4ed8; padding:9px 11px; border-radius:5px; margin:10px 0; background:#f8fafc; }
+                .callout.warning { border-left-color:#d97706; background:#fffbeb; color:#92400e !important; }
+                .callout.danger { border-left-color:#dc2626; background:#fef2f2; color:#991b1b !important; }
+                h3 { font-size:13px; color:#172554; margin:14px 0 8px; }
+                h4 { font-size:10px; color:#334155; margin:11px 0 6px; }
+                .two-col { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+                .info-box { border:1px solid #e2e8f0; border-radius:6px; padding:9px; background:#fff; }
+                .kv { display:grid; grid-template-columns:120px 1fr; gap:5px; padding:3px 0; border-bottom:1px dotted #e2e8f0; }
+                .kv:last-child { border-bottom:none; }
+                .kv .k { color:#64748b; font-weight:bold; }
+                table { width:100%; border-collapse:collapse; margin:7px 0 10px; table-layout:auto; }
+                thead { display:table-header-group; }
+                tr { page-break-inside:avoid; }
+                th { background:#eff6ff; color:#1e3a8a; border:1px solid #cbd5e1; padding:5px 6px; font-size:7.5px; text-transform:uppercase; text-align:left; }
+                td { border:1px solid #dbe1ea; padding:5px 6px; vertical-align:top; font-size:8px; overflow-wrap:anywhere; }
+                td.desc { white-space:normal; line-height:1.5; }
+                td.c, th.c { text-align:center; } td.r, th.r { text-align:right; }
+                .strong { font-weight:bold; }
+                .sub { color:#64748b; font-size:7.2px; margin-top:2px; }
+                .empty { text-align:center; color:#94a3b8; font-style:italic; padding:12px; }
+                .pill { display:inline-block; border-radius:999px; padding:2px 5px; font-size:6.8px; font-weight:bold; white-space:nowrap; }
+                .pill.ok { background:#dcfce7; color:#166534; } .pill.wait { background:#fef3c7; color:#92400e; } .pill.no { background:#fee2e2; color:#991b1b; }
+                .totals { margin-left:auto; width:330px; }
+                .totals .row { display:flex; justify-content:space-between; gap:10px; padding:4px 0; border-bottom:1px solid #e2e8f0; }
+                .totals .grand { font-size:11px; font-weight:bold; border-top:2px solid #172554; border-bottom:none; margin-top:3px; padding-top:6px; }
+                .signature { display:grid; grid-template-columns:1fr 1fr; gap:50px; margin-top:30px; text-align:center; }
+                .signature .line { border-top:1px solid #334155; padding-top:4px; margin:45px 25px 0; }
+                .footer-note { margin-top:15px; padding-top:7px; border-top:1px solid #e2e8f0; color:#94a3b8; font-size:7.2px; display:flex; justify-content:space-between; }
+                .no-break { page-break-inside:avoid; }
+                @media print { body { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }
+            </style></head><body><div class="report">
+
+            <section class="page-section first">
+                <div class="section-head">
+                    <div class="brand">${logo ? `<img src="${logo}" class="logo">` : ''}<div class="company"><h2>${esc(s.name || 'PT KALIMAJA SURYA ALAM')}</h2><div>${esc(s.slogan || '')}</div><div>${esc(s.address || '')}${s.phone ? ' | Telp: '+esc(s.phone) : ''}</div></div></div>
+                    <div class="report-tag"><b>LAPORAN KONTROL PROYEK / TENDER</b>No. ${esc(d.invNum || '-')}<br>Dicetak ${esc(generatedAt)}</div>
+                </div>
+                <span class="badge">${esc(d.status || '-')}</span>
+                <h1 class="title">${esc(d.title || 'Proyek / Tender')}</h1>
+                <div class="subtitle">Klien: <b>${esc(c.name || '-')}</b> &nbsp; | &nbsp; PIC: ${esc(c.pic || '-')}</div>
+
+                <div class="grid">
+                    <div class="card"><div class="label">Nilai Proyek</div><div class="value">${fmt(value)}</div><div class="hint">Grand total penawaran</div></div>
+                    <div class="card"><div class="label">Total Biaya Tercatat</div><div class="value ${statusClass(costRatio)}">${fmt(f.totalCost)}</div><div class="hint">${costRatio.toFixed(1)}% dari nilai proyek</div></div>
+                    <div class="card"><div class="label">Sisa Nilai Proyek</div><div class="value ${remaining<0?'danger':'safe'}">${fmt(remaining)}</div><div class="hint">Nilai proyek - biaya tercatat</div></div>
+                    <div class="card"><div class="label">Estimasi Margin Kotor</div><div class="value ${margin<0?'danger':'safe'}">${fmt(margin)}</div><div class="hint">${marginPct.toFixed(1)}% dari nilai proyek</div></div>
+                    <div class="card"><div class="label">PO Disetujui</div><div class="value">${fmt(f.approvedPO)}</div><div class="hint">Komitmen pengadaan berlaku</div></div>
+                    <div class="card"><div class="label">Operasional + Overhead</div><div class="value">${fmt(f.opsTotal)}</div><div class="hint">Operasional ${fmt(f.operational)} | Overhead ${fmt(f.overhead)}</div></div>
+                    <div class="card"><div class="label">PO Pending</div><div class="value warning">${fmt(f.pendingPO)}</div><div class="hint">Belum dianggap biaya berlaku</div></div>
+                    <div class="card"><div class="label">Invoice / Terbayar</div><div class="value">${fmt(f.totalInvoice)}</div><div class="hint">Terbayar ${fmt(f.totalPaid)}</div></div>
+                </div>
+
+                <div class="callout ${statusClass(costRatio)}"><b>Status biaya: ${statusText(costRatio)}.</b> Biaya tercatat saat ini ${costRatio.toFixed(1)}% dari nilai proyek. Jika seluruh PO pending disetujui, komitmen/biaya terproyeksi menjadi <b>${fmt(projected)}</b> (${projectedRatio.toFixed(1)}%).</div>
+                <div class="callout ${materialRatio>=100?'danger':materialRatio>=80?'warning':''}"><b>Kontrol Material & Spare Part:</b> disetujui ${fmt(materialApproved)}, pending ${fmt(materialPending)}, proyeksi ${fmt(materialProjected)} atau <b>${materialRatio.toFixed(1)}%</b> dari nilai proyek. ${materialRatio>=80?'PERINGATAN: telah mencapai/melewati batas 80%.':'Masih di bawah batas warning 80%.'}</div>
+
+                <h3>Identitas Proyek / Tender</h3>
+                <div class="two-col">
+                    <div class="info-box">
+                        <div class="kv"><div class="k">No. Penawaran</div><div>${esc(d.invNum||'-')}</div></div>
+                        <div class="kv"><div class="k">Tanggal Penawaran</div><div>${dateOnly(d.date)}</div></div>
+                        <div class="kv"><div class="k">Status</div><div>${esc(d.status||'-')}</div></div>
+                        <div class="kv"><div class="k">Mulai Proyek</div><div>${dt(d.startedAt)}</div></div>
+                        <div class="kv"><div class="k">Selesai</div><div>${dt(d.completedAt)}</div></div>
+                        <div class="kv"><div class="k">Dibuat Oleh</div><div>${esc(d.createdByEmail||'-')}</div></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="kv"><div class="k">Klien</div><div>${esc(c.name||'-')}</div></div>
+                        <div class="kv"><div class="k">PIC</div><div>${esc(c.pic||'-')}</div></div>
+                        <div class="kv"><div class="k">Telepon</div><div>${esc(c.phone||'-')}</div></div>
+                        <div class="kv"><div class="k">Email</div><div>${esc(c.email||'-')}</div></div>
+                        <div class="kv"><div class="k">Alamat</div><div>${multi(c.address||'-')}</div></div>
+                        <div class="kv"><div class="k">ID Pelanggan</div><div>${esc(c.idPelanggan||'-')}</div></div>
+                    </div>
+                </div>
+                <div class="footer-note"><span>Dokumen internal - ${esc(s.name || 'Kalimaja Surya Alam')}</span><span>Dicetak oleh ${esc(generatedBy)}</span></div>
+            </section>
+
+            <section class="page-section">
+                <div class="section-head"><div class="brand">${logo ? `<img src="${logo}" class="logo">` : ''}<div class="company"><h2>${esc(s.name || 'PT KALIMAJA SURYA ALAM')}</h2><div>Rincian Penawaran & Lingkup Proyek</div></div></div><div class="report-tag"><b>${esc(d.invNum||'-')}</b>${esc(d.title||'')}</div></div>
+                <h3>Rincian Barang / Jasa Penawaran</h3>
+                <table><thead><tr><th class="c">No</th><th>Deskripsi</th><th class="r">Qty</th><th class="r">Harga Satuan</th><th class="r">Jumlah</th></tr></thead><tbody>${itemRows}</tbody></table>
+                <div class="totals no-break"><div class="row"><span>DPP</span><b>${fmt(subtotal)}</b></div><div class="row"><span>PPN (${taxRate}%)</span><b>${fmt(taxValue)}</b></div><div class="row grand"><span>Nilai Proyek / Grand Total</span><span>${fmt(value)}</span></div></div>
+                <div style="clear:both"></div>
+                <div class="two-col" style="margin-top:16px"><div class="info-box"><h4>Catatan Khusus</h4><div>${multi(d.notes||'-')}</div></div><div class="info-box"><h4>Syarat & Ketentuan</h4><div>${multi(d.terms||'-')}</div></div></div>
+                <div class="footer-note"><span>Halaman Rincian Penawaran</span><span>${esc(d.invNum||'-')}</span></div>
+            </section>
+
+            <section class="page-section">
+                <div class="section-head"><div class="brand">${logo ? `<img src="${logo}" class="logo">` : ''}<div class="company"><h2>${esc(s.name || 'PT KALIMAJA SURYA ALAM')}</h2><div>Kontrol Purchase Order / Pengadaan</div></div></div><div class="report-tag"><b>${esc(d.invNum||'-')}</b>Nilai proyek ${fmt(value)}</div></div>
+                <div class="grid">
+                    <div class="card"><div class="label">PO Disetujui</div><div class="value">${fmt(f.approvedPO)}</div></div>
+                    <div class="card"><div class="label">PO Pending</div><div class="value warning">${fmt(f.pendingPO)}</div></div>
+                    <div class="card"><div class="label">Material/Spare Part Approved</div><div class="value">${fmt(materialApproved)}</div></div>
+                    <div class="card"><div class="label">Material/Spare Part Projected</div><div class="value ${statusClass(materialRatio)}">${fmt(materialProjected)}</div><div class="hint">${materialRatio.toFixed(1)}% nilai proyek</div></div>
+                </div>
+                <h3>Daftar Purchase Order</h3>
+                <table><thead><tr><th class="c">No</th><th>No. PO</th><th>Supplier</th><th>Jenis Pembelian</th><th>Tanggal</th><th class="r">Nilai</th><th class="c">Status</th></tr></thead><tbody>${poRows}</tbody></table>
+                <div class="callout ${materialRatio>=100?'danger':materialRatio>=80?'warning':''}">Material & spare part (approved + pending): <b>${fmt(materialProjected)}</b> (${materialRatio.toFixed(1)}%). ${materialRatio>=80?'Warning 80% aktif - perlukan perhatian/approval Admin Utama.':'Masih dalam batas normal.'}</div>
+                <div class="footer-note"><span>Halaman Purchase Order / Pengadaan</span><span>${esc(d.invNum||'-')}</span></div>
+            </section>
+
+            <section class="page-section">
+                <div class="section-head"><div class="brand">${logo ? `<img src="${logo}" class="logo">` : ''}<div class="company"><h2>${esc(s.name || 'PT KALIMAJA SURYA ALAM')}</h2><div>Biaya Operasional & Overhead</div></div></div><div class="report-tag"><b>${esc(d.invNum||'-')}</b>Total biaya langsung ${fmt(f.opsTotal)}</div></div>
+                <div class="grid">
+                    <div class="card"><div class="label">Operasional</div><div class="value">${fmt(f.operational)}</div></div>
+                    <div class="card"><div class="label">Overhead</div><div class="value">${fmt(f.overhead)}</div></div>
+                    <div class="card"><div class="label">Total Operasional + Overhead</div><div class="value">${fmt(f.opsTotal)}</div></div>
+                    <div class="card"><div class="label">Total Seluruh Biaya Tercatat</div><div class="value ${statusClass(costRatio)}">${fmt(f.totalCost)}</div><div class="hint">Termasuk PO disetujui</div></div>
+                </div>
+                <h3>Ringkasan Biaya per Kategori</h3>
+                <table><thead><tr><th class="c">No</th><th>Kategori Biaya</th><th class="r">Jumlah</th></tr></thead><tbody>${categoryRows}</tbody></table>
+                <h3>Rincian Seluruh Biaya Operasional & Overhead</h3>
+                <table><thead><tr><th class="c">No</th><th>Tanggal</th><th>Kategori / Keterangan</th><th>Penerima</th><th>Metode</th><th>Nota/Ref</th><th class="r">Nominal</th><th>Input Oleh</th></tr></thead><tbody>${opsRows}</tbody></table>
+                <div class="footer-note"><span>Halaman Biaya Operasional & Overhead</span><span>${esc(d.invNum||'-')}</span></div>
+            </section>
+
+            <section class="page-section">
+                <div class="section-head"><div class="brand">${logo ? `<img src="${logo}" class="logo">` : ''}<div class="company"><h2>${esc(s.name || 'PT KALIMAJA SURYA ALAM')}</h2><div>Invoice, Pembayaran & Status Proyek</div></div></div><div class="report-tag"><b>${esc(d.invNum||'-')}</b>${esc(d.status||'-')}</div></div>
+                <div class="grid">
+                    <div class="card"><div class="label">Total Invoice</div><div class="value">${fmt(f.totalInvoice)}</div></div>
+                    <div class="card"><div class="label">Sudah Terbayar</div><div class="value safe">${fmt(f.totalPaid)}</div></div>
+                    <div class="card"><div class="label">Piutang / Belum Terbayar</div><div class="value ${outstandingInvoice>0?'warning':'safe'}">${fmt(outstandingInvoice)}</div></div>
+                    <div class="card"><div class="label">Status Proyek</div><div class="value">${esc(d.status||'-')}</div></div>
+                </div>
+                <h3>Daftar Invoice Proyek</h3>
+                <table><thead><tr><th class="c">No</th><th>No. Invoice</th><th>Tanggal</th><th class="r">Nilai</th><th class="r">Terbayar</th><th class="r">Sisa</th><th class="c">Status</th></tr></thead><tbody>${invRows}</tbody></table>
+                <h3>Riwayat Tahapan Proyek</h3>
+                <table><thead><tr><th class="c">No</th><th>Dari</th><th>Menjadi</th><th>Waktu</th><th>Diubah Oleh</th></tr></thead><tbody>${historyRows}</tbody></table>
+                <div class="info-box no-break" style="margin-top:15px"><h4>Kesimpulan Keuangan Proyek</h4><div class="kv"><div class="k">Nilai Proyek</div><div><b>${fmt(value)}</b></div></div><div class="kv"><div class="k">Biaya Tercatat</div><div><b>${fmt(f.totalCost)}</b> (${costRatio.toFixed(1)}%)</div></div><div class="kv"><div class="k">PO Pending</div><div>${fmt(f.pendingPO)}</div></div><div class="kv"><div class="k">Proyeksi Jika PO Pending Disetujui</div><div><b>${fmt(projected)}</b> (${projectedRatio.toFixed(1)}%)</div></div><div class="kv"><div class="k">Estimasi Margin Kotor Saat Ini</div><div><b>${fmt(margin)}</b> (${marginPct.toFixed(1)}%)</div></div></div>
+                <div class="signature"><div><div class="line">Diperiksa / Disiapkan</div><div>${esc(generatedBy)}</div></div><div><div class="line">Administrator / Direktur</div><div>${esc(s.name || 'PT Kalimaja Surya Alam')}</div></div></div>
+                <div class="footer-note"><span>Laporan dibuat otomatis dari data ERP yang tercatat pada saat cetak.</span><span>${esc(generatedAt)}</span></div>
+            </section>
+
+            </div><script>window.onload=function(){setTimeout(function(){window.print();},350);};<\/script></body></html>`);
+            win.document.close();
+        };
+
         window.printQuotation = (id) => {
             const d = window.deals.find(x => String(x.id) === String(id));
             const c = window.clients.find(x => String(x.id) === String(d.clientId)) || {name:'-', address:'-', pic:'-', idPelanggan:'-'};
