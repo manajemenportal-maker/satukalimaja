@@ -299,6 +299,32 @@
                         </div>
                     </div>
 
+                    <!-- ADMIN: DAFTAR & KONTROL PROYEK/TENDER -->
+                    <div id="admin-project-panel" class="hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-5 border-b border-slate-200 bg-slate-50/70 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2"><i class="fa-solid fa-diagram-project text-brand-600"></i> Daftar Proyek / Tender</h3>
+                                <p class="text-xs text-slate-500 mt-1">Klik salah satu proyek untuk membuka seluruh keterangan, nilai penawaran, PO, biaya operasional/overhead, invoice, serta riwayat proses.</p>
+                            </div>
+                            <div class="relative w-full lg:w-80">
+                                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input id="admin-project-search" oninput="window.renderAdminProjectDashboard()" type="text" placeholder="Cari proyek, tender, klien..." class="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-md text-sm outline-none focus:border-brand-500 bg-white">
+                            </div>
+                        </div>
+                        <div class="p-4 grid grid-cols-2 lg:grid-cols-4 gap-3 border-b border-slate-100">
+                            <div class="rounded-lg bg-blue-50 border border-blue-100 p-3"><div class="text-[10px] font-bold text-blue-500 uppercase">Total Proyek</div><div id="admin-project-count" class="text-xl font-bold text-blue-800 mt-1">0</div></div>
+                            <div class="rounded-lg bg-amber-50 border border-amber-100 p-3"><div class="text-[10px] font-bold text-amber-600 uppercase">Aktif / Berjalan</div><div id="admin-project-active-count" class="text-xl font-bold text-amber-800 mt-1">0</div></div>
+                            <div class="rounded-lg bg-slate-50 border border-slate-200 p-3"><div class="text-[10px] font-bold text-slate-500 uppercase">Total Nilai Proyek</div><div id="admin-project-total-value" class="text-lg font-bold text-slate-800 mt-1">Rp 0</div></div>
+                            <div class="rounded-lg bg-red-50 border border-red-100 p-3"><div class="text-[10px] font-bold text-red-500 uppercase">Biaya Tercatat</div><div id="admin-project-total-cost" class="text-lg font-bold text-red-700 mt-1">Rp 0</div></div>
+                        </div>
+                        <div class="overflow-x-auto max-h-[430px] overflow-y-auto">
+                            <table class="w-full text-left data-grid">
+                                <thead class="sticky top-0 z-10"><tr><th>Proyek / Tender</th><th>Klien</th><th>Status</th><th class="text-right">Nilai</th><th class="text-right">Biaya Tercatat</th><th class="text-right">PO Pending</th><th class="text-center">Kontrol</th></tr></thead>
+                                <tbody id="admin-project-tbody"><tr><td colspan="7" class="text-center text-slate-400 py-7">Memuat proyek...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
                         <div id="dash-recent-cash-card" class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
                             <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
@@ -1471,6 +1497,29 @@
                         </button>
                     </div>
                 </div>
+                <div id="detail-deal-workflow" class="bg-white border border-slate-200 rounded-xl p-5 mb-6"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KONTROL PROYEK ADMIN -->
+    <div id="admin-project-detail-modal" class="fixed inset-0 bg-slate-900/70 hidden items-center justify-center p-3 sm:p-5 z-[70] overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl my-5 overflow-hidden">
+            <div class="p-5 sm:p-6 bg-brand-950 text-white flex items-start justify-between gap-4">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap gap-2 items-center mb-2"><span id="admin-project-detail-status" class="px-2 py-1 rounded bg-white/10 border border-white/20 text-[10px] font-bold uppercase">STATUS</span><span id="admin-project-detail-number" class="text-[10px] font-mono text-brand-200">-</span></div>
+                    <h3 id="admin-project-detail-title" class="text-xl sm:text-2xl font-bold leading-tight">Detail Proyek</h3>
+                    <p id="admin-project-detail-client" class="text-sm text-brand-100 mt-1">-</p>
+                </div>
+                <button onclick="window.closeAdminProjectDetail()" class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-xl">✕</button>
+            </div>
+            <div id="admin-project-detail-body" class="p-4 sm:p-6 space-y-6 bg-slate-50 max-h-[82vh] overflow-y-auto"></div>
+            <div class="p-4 bg-white border-t border-slate-200 flex flex-wrap justify-between gap-3">
+                <button id="admin-project-open-workflow" class="px-4 py-2 rounded-md border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-slate-50"><i class="fa-solid fa-list-check mr-1.5"></i>Buka di Proyek</button>
+                <div class="flex gap-2">
+                    <button id="admin-project-print-quotation" class="px-4 py-2 rounded-md bg-brand-600 text-white text-sm font-bold hover:bg-brand-700"><i class="fa-solid fa-print mr-1.5"></i>Cetak Penawaran</button>
+                    <button onclick="window.closeAdminProjectDetail()" class="px-4 py-2 rounded-md bg-slate-800 text-white text-sm font-bold hover:bg-slate-900">Tutup</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1684,6 +1733,8 @@
                 appScreen.style.display = 'none';
                 const adminAccountPanel = document.getElementById('admin-account-panel');
                 if (adminAccountPanel) adminAccountPanel.classList.add('hidden');
+                const adminProjectPanel = document.getElementById('admin-project-panel');
+                if (adminProjectPanel) adminProjectPanel.classList.add('hidden');
                 document.getElementById('loading-overlay').style.display = 'none';
                 document.getElementById('form-login').classList.remove('hidden');
             }
@@ -1761,6 +1812,8 @@
                 const el = document.getElementById(id);
                 if (el) el.classList.toggle('hidden', !isAdmin);
             });
+            const adminProjectPanel = document.getElementById('admin-project-panel');
+            if (adminProjectPanel) adminProjectPanel.classList.toggle('hidden', !isAdmin);
         }
 
         function requireAdminModule(moduleName = 'modul ini') {
@@ -2076,6 +2129,7 @@ Lanjutkan?`);
                 window.renderPOs();
                 window.renderPOProjectCostMonitor();
                 window.updatePOProjectBudgetPreview();
+                window.renderDashboard();
             });
 
             // Sync untuk Suppliers
@@ -2131,6 +2185,7 @@ Lanjutkan?`);
                 onSnapshot(dataPath('invoices'), (snapshot) => {
                     window.invoices = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
                     window.renderInvoices();
+                    window.renderDashboard();
                 }, (err) => console.error('Invoice sync error:', err));
 
                 onSnapshot(dataPath('transactions'), (snapshot) => {
@@ -2238,6 +2293,194 @@ Lanjutkan?`);
                     </div>
                 `).join('');
             }
+            if (window.userRole === 'admin' && window.renderAdminProjectDashboard) window.renderAdminProjectDashboard();
+        };
+
+        window.getAdminProjectFinanceDetail = (dealId) => {
+            const id = String(dealId || '');
+            const pos = (window.purchaseOrders || []).filter(po => String(po.projectId || '') === id);
+            const approvedPOs = pos.filter(po => window.isPOApproved ? window.isPOApproved(po) : (po.approved === true));
+            const pendingPOs = pos.filter(po => {
+                const state = po.approvalStatus || (po.approved === true ? 'approved' : 'pending');
+                return state !== 'rejected' && !(window.isPOApproved ? window.isPOApproved(po) : po.approved === true);
+            });
+            const rejectedPOs = pos.filter(po => (po.approvalStatus || '') === 'rejected');
+            const ops = (window.operationalExpenses || []).filter(x => String(x.projectId || '') === id);
+            const invoices = (window.invoices || []).filter(x => String(x.dealId || '') === id);
+            const approvedPO = approvedPOs.reduce((s,x) => s + (Number(x.value) || 0), 0);
+            const pendingPO = pendingPOs.reduce((s,x) => s + (Number(x.value) || 0), 0);
+            const operational = ops.filter(x => String(x.costGroup || '').toLowerCase() !== 'overhead').reduce((s,x) => s + (Number(x.amount) || 0), 0);
+            const overhead = ops.filter(x => String(x.costGroup || '').toLowerCase() === 'overhead').reduce((s,x) => s + (Number(x.amount) || 0), 0);
+            const opsTotal = operational + overhead;
+            const totalCost = approvedPO + opsTotal;
+            const totalInvoice = invoices.reduce((s,x) => s + (Number(x.total) || 0), 0);
+            const totalPaid = invoices.reduce((s,x) => s + (Number(x.paid) || 0), 0);
+            return { pos, approvedPOs, pendingPOs, rejectedPOs, ops, invoices, approvedPO, pendingPO, operational, overhead, opsTotal, totalCost, totalInvoice, totalPaid };
+        };
+
+        window.renderAdminProjectDashboard = () => {
+            const panel = document.getElementById('admin-project-panel');
+            const tb = document.getElementById('admin-project-tbody');
+            if (!panel || !tb) return;
+            if (window.userRole !== 'admin') { panel.classList.add('hidden'); return; }
+            panel.classList.remove('hidden');
+
+            const q = String(document.getElementById('admin-project-search')?.value || '').trim().toLowerCase();
+            const all = [...(window.deals || [])].sort((a,b) => {
+                const rank = {'Proses Pengerjaan':0,'Survei / Penawaran':1,'Selesai':2};
+                return (rank[a.status] ?? 9) - (rank[b.status] ?? 9) || String(b.date || b.createdAt || '').localeCompare(String(a.date || a.createdAt || ''));
+            });
+            const filtered = all.filter(d => {
+                const client = window.clients.find(c => String(c.id) === String(d.clientId));
+                const hay = `${d.invNum || ''} ${d.title || ''} ${client?.name || ''} ${d.status || ''}`.toLowerCase();
+                return !q || hay.includes(q);
+            });
+
+            const totalValue = all.reduce((s,d) => s + (Number(d.value) || 0), 0);
+            const totalCost = all.reduce((s,d) => s + window.getAdminProjectFinanceDetail(d.id).totalCost, 0);
+            const activeCount = all.filter(d => d.status !== 'Selesai').length;
+            const setText = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val; };
+            setText('admin-project-count', String(all.length));
+            setText('admin-project-active-count', String(activeCount));
+            setText('admin-project-total-value', window.formatIDR(totalValue));
+            setText('admin-project-total-cost', window.formatIDR(totalCost));
+
+            if (!filtered.length) {
+                tb.innerHTML = `<tr><td colspan="7" class="text-center text-slate-400 py-8 italic">${q ? 'Proyek tidak ditemukan.' : 'Belum ada proyek/tender.'}</td></tr>`;
+                return;
+            }
+
+            tb.innerHTML = filtered.map(d => {
+                const client = window.clients.find(c => String(c.id) === String(d.clientId));
+                const f = window.getAdminProjectFinanceDetail(d.id);
+                const value = Number(d.value) || 0;
+                const ratio = value > 0 ? (f.totalCost / value * 100) : 0;
+                const statusClass = d.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : (d.status === 'Proses Pengerjaan' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-blue-100 text-blue-700 border-blue-200');
+                const ratioClass = ratio >= 100 ? 'text-red-700 bg-red-50 border-red-200' : ratio >= 80 ? 'text-amber-700 bg-amber-50 border-amber-200' : 'text-green-700 bg-green-50 border-green-200';
+                return `<tr class="border-b hover:bg-brand-50/40 transition-colors cursor-pointer" onclick="window.openAdminProjectDetail('${d.id}')">
+                    <td class="p-4 min-w-[260px]"><div class="text-[10px] text-slate-400 font-mono">${escapeHtml(d.invNum || '-')}</div><div class="font-bold text-slate-800 text-xs mt-0.5">${escapeHtml(d.title || '-')}</div></td>
+                    <td class="p-4 text-xs text-slate-600">${escapeHtml(client?.name || '-')}</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded border text-[9px] font-bold uppercase ${statusClass}">${escapeHtml(d.status || '-')}</span></td>
+                    <td class="p-4 text-right font-bold text-slate-800 text-xs">${window.formatIDR(value)}</td>
+                    <td class="p-4 text-right"><div class="font-bold text-red-600 text-xs">${window.formatIDR(f.totalCost)}</div><span class="inline-block mt-1 px-1.5 py-0.5 rounded border text-[9px] font-bold ${ratioClass}">${ratio.toFixed(1)}%</span></td>
+                    <td class="p-4 text-right font-bold ${f.pendingPO > 0 ? 'text-amber-700' : 'text-slate-400'} text-xs">${window.formatIDR(f.pendingPO)}</td>
+                    <td class="p-4 text-center"><button onclick="event.stopPropagation(); window.openAdminProjectDetail('${d.id}')" class="px-3 py-1.5 rounded bg-brand-600 text-white text-[10px] font-bold hover:bg-brand-700"><i class="fa-solid fa-magnifying-glass-chart mr-1"></i>Detail</button></td>
+                </tr>`;
+            }).join('');
+        };
+
+        window.openAdminProjectDetail = (id) => {
+            if (window.userRole !== 'admin') return alert('Detail kontrol proyek hanya untuk Administrator.');
+            const d = (window.deals || []).find(x => String(x.id) === String(id));
+            if (!d) return alert('Proyek tidak ditemukan.');
+            const client = window.clients.find(c => String(c.id) === String(d.clientId));
+            const f = window.getAdminProjectFinanceDetail(id);
+            const value = Number(d.value) || 0;
+            const costRatio = value > 0 ? f.totalCost / value * 100 : 0;
+            const projected = f.totalCost + f.pendingPO;
+            const projectedRatio = value > 0 ? projected / value * 100 : 0;
+            const remaining = value - f.totalCost;
+            const estMargin = value - f.totalCost;
+            const estMarginPct = value > 0 ? estMargin / value * 100 : 0;
+            const poStats = window.getProjectPOStats ? window.getProjectPOStats(id) : {approvedMaterial:0,pendingMaterial:0};
+            const materialProjected = (Number(poStats.approvedMaterial)||0) + (Number(poStats.pendingMaterial)||0);
+            const materialRatio = value > 0 ? materialProjected / value * 100 : 0;
+
+            const safeMultiline = (v) => escapeHtml(v || '-').replace(/\n/g, '<br>');
+            const formatDateTime = (v) => { if (!v) return '-'; try { return new Date(v).toLocaleString('id-ID'); } catch { return escapeHtml(v); } };
+            const getSupplier = (po) => window.suppliers.find(s => String(s.id) === String(po.clientId));
+
+            document.getElementById('admin-project-detail-title').innerText = d.title || 'Detail Proyek';
+            document.getElementById('admin-project-detail-client').innerText = client?.name || '-';
+            document.getElementById('admin-project-detail-status').innerText = d.status || '-';
+            document.getElementById('admin-project-detail-number').innerText = d.invNum || '-';
+
+            const costHealth = costRatio >= 100 ? ['bg-red-100','text-red-700','KRITIS'] : costRatio >= 80 ? ['bg-amber-100','text-amber-700','WARNING'] : ['bg-green-100','text-green-700','AMAN'];
+            const projectItems = Array.isArray(d.items) ? d.items : [];
+            const itemRows = projectItems.length ? projectItems.map((it,idx) => `<tr><td class="p-3 text-xs text-slate-500">${idx+1}</td><td class="p-3 text-xs text-slate-700 whitespace-pre-line">${safeMultiline(it.desc)}</td><td class="p-3 text-right text-xs">${Number(it.qty)||0}</td><td class="p-3 text-right text-xs">${window.formatIDR(Number(it.price)||0)}</td><td class="p-3 text-right text-xs font-bold">${window.formatIDR((Number(it.qty)||0)*(Number(it.price)||0))}</td></tr>`).join('') : '<tr><td colspan="5" class="p-5 text-center text-slate-400 italic text-xs">Tidak ada rincian item penawaran.</td></tr>';
+
+            const poRows = f.pos.length ? [...f.pos].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(po => {
+                const state = po.approvalStatus || (po.approved === true ? 'approved' : 'pending');
+                const status = window.isPOApproved && window.isPOApproved(po) ? 'DISETUJUI' : state === 'rejected' ? 'DITOLAK' : 'PENDING';
+                const cls = status === 'DISETUJUI' ? 'bg-green-100 text-green-700' : status === 'DITOLAK' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700';
+                return `<tr><td class="p-3 text-[11px] font-mono text-brand-600">${escapeHtml(po.poNum||'-')}</td><td class="p-3 text-xs">${escapeHtml(getSupplier(po)?.name || '-')}</td><td class="p-3 text-xs">${escapeHtml(po.costType||'-')}</td><td class="p-3 text-xs text-slate-500">${escapeHtml(po.date||'-')}</td><td class="p-3 text-right text-xs font-bold">${window.formatIDR(po.value)}</td><td class="p-3 text-center"><span class="px-2 py-1 rounded text-[9px] font-bold ${cls}">${status}</span></td></tr>`;
+            }).join('') : '<tr><td colspan="6" class="p-5 text-center text-slate-400 italic text-xs">Belum ada PO untuk proyek ini.</td></tr>';
+
+            const opsRows = f.ops.length ? [...f.ops].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(x => `<tr><td class="p-3 text-xs text-slate-500">${escapeHtml(x.date||'-')}</td><td class="p-3 text-xs"><div class="font-bold text-slate-700">${escapeHtml(x.costGroup||'-')} • ${escapeHtml(x.category||'-')}</div><div class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(x.description||'-')}</div></td><td class="p-3 text-xs">${escapeHtml(x.payee||'-')}</td><td class="p-3 text-xs text-slate-500">${escapeHtml(x.paymentMethod||'-')}</td><td class="p-3 text-right text-xs font-bold text-red-600">${window.formatIDR(x.amount)}</td><td class="p-3 text-[10px] text-slate-400">${escapeHtml(x.createdByName || x.createdByEmail || '-')}</td></tr>`).join('') : '<tr><td colspan="6" class="p-5 text-center text-slate-400 italic text-xs">Belum ada biaya operasional/overhead untuk proyek ini.</td></tr>';
+
+            const invRows = f.invoices.length ? [...f.invoices].sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).map(inv => `<tr><td class="p-3 text-[11px] font-mono text-brand-600">${escapeHtml(inv.invNum||'-')}</td><td class="p-3 text-xs text-slate-500">${escapeHtml(inv.date||'-')}</td><td class="p-3 text-right text-xs font-bold">${window.formatIDR(inv.total)}</td><td class="p-3 text-right text-xs font-bold text-green-700">${window.formatIDR(inv.paid)}</td><td class="p-3 text-center text-[10px] font-bold">${escapeHtml(inv.status||'-')}</td></tr>`).join('') : '<tr><td colspan="5" class="p-5 text-center text-slate-400 italic text-xs">Belum ada invoice yang dikaitkan ke proyek ini.</td></tr>';
+
+            const hist = Array.isArray(d.statusHistory) ? [...d.statusHistory].reverse() : [];
+            const historyHtml = hist.length ? hist.map(h => `<div class="flex gap-3 py-2 border-b border-slate-100 last:border-0"><div class="mt-1 w-2 h-2 rounded-full bg-brand-500 flex-shrink-0"></div><div><div class="text-xs font-bold text-slate-700">${escapeHtml(h.from || 'Awal')} → ${escapeHtml(h.to || '-')}</div><div class="text-[10px] text-slate-400 mt-0.5">${formatDateTime(h.at)} • ${escapeHtml(h.by || '-')}</div></div></div>`).join('') : '<div class="text-xs text-slate-400 italic">Belum ada riwayat status.</div>';
+
+            const body = document.getElementById('admin-project-detail-body');
+            body.innerHTML = `
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Nilai Proyek</div><div class="text-lg font-bold text-brand-700 mt-1">${window.formatIDR(value)}</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">PO Disetujui</div><div class="text-lg font-bold text-red-600 mt-1">${window.formatIDR(f.approvedPO)}</div><div class="text-[9px] text-slate-400 mt-1">Komitmen pengadaan</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Operasional + Overhead</div><div class="text-lg font-bold text-red-600 mt-1">${window.formatIDR(f.opsTotal)}</div><div class="text-[9px] text-slate-400 mt-1">Biaya yang diinput</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Total Biaya Tercatat</div><div class="text-lg font-bold text-slate-800 mt-1">${window.formatIDR(f.totalCost)}</div><span class="inline-block mt-1 px-2 py-0.5 rounded ${costHealth[0]} ${costHealth[1]} text-[9px] font-bold">${costHealth[2]} ${costRatio.toFixed(1)}%</span></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">PO Pending</div><div class="text-lg font-bold text-amber-700 mt-1">${window.formatIDR(f.pendingPO)}</div><div class="text-[9px] text-slate-400 mt-1">Belum berlaku</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Sisa Nilai Proyek</div><div class="text-lg font-bold ${remaining < 0 ? 'text-red-700':'text-green-700'} mt-1">${window.formatIDR(remaining)}</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Estimasi Margin Kotor</div><div class="text-lg font-bold ${estMargin < 0 ? 'text-red-700':'text-green-700'} mt-1">${window.formatIDR(estMargin)}</div><div class="text-[9px] text-slate-400 mt-1">${estMarginPct.toFixed(1)}% dari nilai proyek</div></div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-4"><div class="text-[10px] font-bold text-slate-400 uppercase">Tagihan / Terbayar</div><div class="text-sm font-bold text-slate-800 mt-1">${window.formatIDR(f.totalInvoice)}</div><div class="text-[10px] text-green-700 font-bold mt-1">Terbayar ${window.formatIDR(f.totalPaid)}</div></div>
+                </div>
+
+                ${materialRatio >= 80 ? `<div class="rounded-xl border ${materialRatio >= 100 ? 'border-red-300 bg-red-50 text-red-800':'border-amber-300 bg-amber-50 text-amber-800'} p-4 text-sm font-bold"><i class="fa-solid fa-triangle-exclamation mr-2"></i>${materialRatio >= 100 ? 'KRITIS':'WARNING'}: Material/Spare Part (termasuk PO pending) mencapai ${materialRatio.toFixed(1)}% dari nilai proyek (${window.formatIDR(materialProjected)}).</div>` : ''}
+                ${projectedRatio >= 80 && f.pendingPO > 0 ? `<div class="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800"><i class="fa-solid fa-circle-info mr-1"></i>Jika seluruh PO pending disetujui, proyeksi total biaya/komitmen menjadi ${window.formatIDR(projected)} atau ${projectedRatio.toFixed(1)}% dari nilai proyek.</div>` : ''}
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-5">
+                        <h4 class="font-bold text-slate-800 text-sm mb-4"><i class="fa-solid fa-file-signature text-brand-500 mr-2"></i>Keterangan Penawaran / Proyek</h4>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                            <div><div class="text-[9px] font-bold text-slate-400 uppercase">No. Penawaran</div><div class="font-bold text-slate-700 mt-1">${escapeHtml(d.invNum||'-')}</div></div>
+                            <div><div class="text-[9px] font-bold text-slate-400 uppercase">Tanggal</div><div class="font-bold text-slate-700 mt-1">${escapeHtml(d.date||'-')}</div></div>
+                            <div><div class="text-[9px] font-bold text-slate-400 uppercase">Mulai Proyek</div><div class="font-bold text-slate-700 mt-1">${formatDateTime(d.startedAt)}</div></div>
+                            <div><div class="text-[9px] font-bold text-slate-400 uppercase">Selesai</div><div class="font-bold text-slate-700 mt-1">${formatDateTime(d.completedAt)}</div></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
+                            <div class="rounded-lg bg-slate-50 p-3"><div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Catatan Khusus</div><div class="text-xs text-slate-700 leading-relaxed">${safeMultiline(d.notes)}</div></div>
+                            <div class="rounded-lg bg-slate-50 p-3"><div class="text-[9px] font-bold text-slate-400 uppercase mb-1">Syarat & Ketentuan</div><div class="text-xs text-slate-700 leading-relaxed">${safeMultiline(d.terms)}</div></div>
+                        </div>
+                        <div class="mt-4 text-[10px] text-slate-400">Dibuat oleh: ${escapeHtml(d.createdByEmail || '-')} • ${formatDateTime(d.createdAt)}</div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-xl p-5">
+                        <h4 class="font-bold text-slate-800 text-sm mb-3"><i class="fa-solid fa-clock-rotate-left text-brand-500 mr-2"></i>Riwayat Tahap</h4>
+                        <div class="max-h-56 overflow-y-auto pr-1">${historyHtml}</div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-100"><h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-list text-brand-500 mr-2"></i>Rincian Barang / Jasa Penawaran</h4></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left data-grid"><thead><tr><th>#</th><th>Deskripsi</th><th class="text-right">Qty</th><th class="text-right">Harga</th><th class="text-right">Jumlah</th></tr></thead><tbody>${itemRows}</tbody></table></div>
+                    <div class="p-4 bg-slate-50 flex justify-end gap-6 text-xs"><span>DPP: <b>${window.formatIDR(d.subtotal || 0)}</b></span><span>PPN: <b>${Number(d.taxRate)||0}%</b></span><span>Total: <b class="text-brand-700">${window.formatIDR(value)}</b></span></div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-cart-shopping text-red-500 mr-2"></i>Purchase Order / Pengadaan</h4><p class="text-[10px] text-slate-400 mt-0.5">PO disetujui dihitung sebagai komitmen biaya. PO pending ditampilkan terpisah dan belum berlaku.</p></div><div class="text-xs"><span class="font-bold text-red-600">Disetujui ${window.formatIDR(f.approvedPO)}</span> • <span class="font-bold text-amber-700">Pending ${window.formatIDR(f.pendingPO)}</span></div></div>
+                    <div class="overflow-x-auto max-h-72 overflow-y-auto"><table class="w-full text-left data-grid"><thead><tr><th>No PO</th><th>Supplier</th><th>Jenis</th><th>Tanggal</th><th class="text-right">Nilai</th><th class="text-center">Status</th></tr></thead><tbody>${poRows}</tbody></table></div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-receipt text-amber-500 mr-2"></i>Biaya Operasional & Overhead</h4></div><div class="text-xs"><span>Operasional <b>${window.formatIDR(f.operational)}</b></span> • <span>Overhead <b>${window.formatIDR(f.overhead)}</b></span></div></div>
+                    <div class="overflow-x-auto max-h-72 overflow-y-auto"><table class="w-full text-left data-grid"><thead><tr><th>Tanggal</th><th>Kategori / Keterangan</th><th>Penerima</th><th>Metode</th><th class="text-right">Nominal</th><th>Input Oleh</th></tr></thead><tbody>${opsRows}</tbody></table></div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-xl overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex justify-between gap-3"><h4 class="font-bold text-slate-800 text-sm"><i class="fa-solid fa-file-invoice-dollar text-green-600 mr-2"></i>Invoice Proyek</h4><div class="text-xs text-slate-500">Tagihan <b>${window.formatIDR(f.totalInvoice)}</b> • Terbayar <b class="text-green-700">${window.formatIDR(f.totalPaid)}</b></div></div>
+                    <div class="overflow-x-auto"><table class="w-full text-left data-grid"><thead><tr><th>No Invoice</th><th>Tanggal</th><th class="text-right">Nilai</th><th class="text-right">Terbayar</th><th class="text-center">Status</th></tr></thead><tbody>${invRows}</tbody></table></div>
+                </div>`;
+
+            document.getElementById('admin-project-open-workflow').onclick = () => { window.closeAdminProjectDetail(); window.switchTab('deals'); setTimeout(() => window.showDealDetails(id), 150); };
+            document.getElementById('admin-project-print-quotation').onclick = () => window.printQuotation(id);
+            const modal = document.getElementById('admin-project-detail-modal');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        };
+
+        window.closeAdminProjectDetail = () => {
+            const modal = document.getElementById('admin-project-detail-modal');
+            if (!modal) return;
+            modal.classList.add('hidden'); modal.classList.remove('flex');
         };
 
         window.renderClients = () => {
@@ -2301,28 +2544,119 @@ Lanjutkan?`);
             `).join('');
         };
 
+        window.getDealWorkflowActionHTML = (d) => {
+            const status = d.status || 'Survei / Penawaran';
+            if (status === 'Survei / Penawaran') {
+                return `<button onclick="event.stopPropagation();window.updateDealStatus('${d.id}','Proses Pengerjaan')" class="w-full mt-3 px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-500 hover:text-white rounded-md border border-amber-200 text-[11px] font-bold transition-colors"><i class="fa-solid fa-play mr-1.5"></i>Mulai Proyek / Masuk Proses</button>`;
+            }
+            if (status === 'Proses Pengerjaan') {
+                return `<button onclick="event.stopPropagation();window.updateDealStatus('${d.id}','Selesai')" class="w-full mt-3 px-3 py-2 bg-green-50 text-green-700 hover:bg-green-600 hover:text-white rounded-md border border-green-200 text-[11px] font-bold transition-colors"><i class="fa-solid fa-circle-check mr-1.5"></i>Tandai Pekerjaan Selesai</button>`;
+            }
+            if (status === 'Selesai' && window.userRole === 'admin') {
+                return `<button onclick="event.stopPropagation();window.updateDealStatus('${d.id}','Proses Pengerjaan')" class="w-full mt-3 px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-700 hover:text-white rounded-md border border-slate-200 text-[11px] font-bold transition-colors"><i class="fa-solid fa-rotate-left mr-1.5"></i>Buka Kembali ke Proses</button>`;
+            }
+            return '';
+        };
+
         window.renderDeals = () => {
             const map = { 'col-survei': 'Survei / Penawaran', 'col-proses': 'Proses Pengerjaan', 'col-selesai': 'Selesai' };
             Object.entries(map).forEach(([elId, status]) => {
                 const list = window.deals.filter(d => d.status === status);
-                document.getElementById(elId).innerHTML = list.map(d => `
-                    <div class="bg-white p-3.5 rounded-lg shadow-sm border border-slate-200 relative group overflow-hidden">
+                const col = document.getElementById(elId);
+                if (!col) return;
+                col.innerHTML = list.length ? list.map(d => {
+                    const started = d.startedAt ? new Date(d.startedAt).toLocaleDateString('id-ID') : '';
+                    const completed = d.completedAt ? new Date(d.completedAt).toLocaleDateString('id-ID') : '';
+                    const stageDate = status === 'Proses Pengerjaan' && started ? `<div class="text-[9px] text-amber-600 font-semibold mt-1 pl-1"><i class="fa-regular fa-clock mr-1"></i>Mulai ${started}</div>`
+                        : status === 'Selesai' && completed ? `<div class="text-[9px] text-green-600 font-semibold mt-1 pl-1"><i class="fa-solid fa-check mr-1"></i>Selesai ${completed}</div>` : '';
+                    return `
+                    <div onclick="window.showDealDetails('${d.id}')" class="bg-white p-3.5 rounded-lg shadow-sm border border-slate-200 relative group overflow-hidden cursor-pointer hover:border-brand-300 transition-colors">
                         <div class="absolute top-0 left-0 w-1 h-full ${status==='Selesai'?'bg-green-500':(status==='Proses Pengerjaan'?'bg-amber-400':'bg-brand-500')}"></div>
-                        <h4 onclick="window.showDealDetails('${d.id}')" class="font-bold text-sm text-slate-800 cursor-pointer hover:text-brand-600 leading-tight mb-1 pl-1">${d.title}</h4>
-                        <p class="text-[11px] text-slate-500 pl-1 flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-300"></i> ${window.clients.find(c=>String(c.id)===String(d.clientId))?.name || '...'}</p>
-                        <div class="mt-3 flex justify-between items-center pl-1">
+                        <h4 class="font-bold text-sm text-slate-800 hover:text-brand-600 leading-tight mb-1 pl-1">${escapeHtml(d.title || '-')}</h4>
+                        <p class="text-[11px] text-slate-500 pl-1 flex items-center gap-1.5"><i class="fa-solid fa-building text-slate-300"></i> ${escapeHtml(window.clients.find(c=>String(c.id)===String(d.clientId))?.name || '...')}</p>
+                        ${stageDate}
+                        <div class="mt-3 flex justify-between items-center pl-1" onclick="event.stopPropagation();">
                             <span class="text-brand-600 font-bold text-xs">${window.formatIDR(d.value)}</span>
-                            <div class="flex gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+                            <div class="flex gap-1.5">
                                 <button onclick="window.openEditDealModal('${d.id}')" class="px-2 py-1 bg-amber-50 rounded text-amber-600 hover:bg-amber-500 hover:text-white border border-amber-100 text-[10px] font-bold transition-colors" title="Edit"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="window.printQuotation('${d.id}')" class="px-2 py-1 bg-slate-100 rounded text-slate-500 hover:text-brand-600 hover:bg-brand-50 border border-slate-200 text-[10px] font-bold" title="Cetak"><i class="fa-solid fa-print"></i></button>
-                                <button onclick="window.deleteDeal('${d.id}')" class="px-2 py-1 bg-red-50 rounded text-red-600 hover:bg-red-500 hover:text-white border border-red-100 text-[10px] font-bold transition-colors" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                                ${window.userRole === 'admin' ? `<button onclick="window.deleteDeal('${d.id}')" class="px-2 py-1 bg-red-50 rounded text-red-600 hover:bg-red-500 hover:text-white border border-red-100 text-[10px] font-bold transition-colors" title="Hapus"><i class="fa-solid fa-trash"></i></button>` : ''}
                             </div>
                         </div>
-                    </div>
-                `).join('');
-                document.getElementById('count-'+elId.split('-')[1]).innerText = list.length;
+                        <div onclick="event.stopPropagation();">${window.getDealWorkflowActionHTML(d)}</div>
+                    </div>`;
+                }).join('') : `<div class="text-center text-slate-400 text-xs italic py-8">Belum ada data pada tahap ini.</div>`;
+                const count = document.getElementById('count-'+elId.split('-')[1]);
+                if (count) count.innerText = list.length;
             });
         };
+
+        window.getDealCostSummary = (dealId) => {
+            const poStats = window.getProjectPOStats ? window.getProjectPOStats(dealId) : {approvedAll:0,pendingAll:0,approvedMaterial:0,pendingMaterial:0};
+            const ops = (window.operationalExpenses || []).filter(x => String(x.projectId || '') === String(dealId || ''));
+            const operational = ops.reduce((sum,x) => sum + (Number(x.amount) || 0), 0);
+            return {
+                approvedPO: Number(poStats.approvedAll) || 0,
+                pendingPO: Number(poStats.pendingAll) || 0,
+                operational,
+                committed: (Number(poStats.approvedAll) || 0) + operational,
+                projected: (Number(poStats.approvedAll) || 0) + (Number(poStats.pendingAll) || 0) + operational
+            };
+        };
+
+        window.updateDealStatus = async (id, newStatus) => {
+            const d = (window.deals || []).find(x => String(x.id) === String(id));
+            if (!d || !window.user) return;
+            const oldStatus = d.status || 'Survei / Penawaran';
+            const allowed = ['Survei / Penawaran', 'Proses Pengerjaan', 'Selesai'];
+            if (!allowed.includes(newStatus) || oldStatus === newStatus) return;
+
+            const oldIndex = allowed.indexOf(oldStatus);
+            const newIndex = allowed.indexOf(newStatus);
+            if (newIndex < oldIndex && window.userRole !== 'admin') {
+                alert('Tahap proyek hanya dapat dikembalikan oleh Administrator.');
+                return;
+            }
+            if (newIndex > oldIndex + 1) {
+                alert('Tahap proyek harus dijalankan berurutan.');
+                return;
+            }
+
+            let message = '';
+            if (oldStatus === 'Survei / Penawaran' && newStatus === 'Proses Pengerjaan') {
+                message = `Mulai proyek ini?\n\n${d.title}\n\nStatus akan berubah menjadi PROSES PENGERJAAN.`;
+            } else if (oldStatus === 'Proses Pengerjaan' && newStatus === 'Selesai') {
+                const stats = window.getProjectPOStats ? window.getProjectPOStats(id) : {pendingAll:0};
+                const pendingPO = Number(stats.pendingAll) || 0;
+                message = `Tandai proyek ini SELESAI?\n\n${d.title}` + (pendingPO > 0 ? `\n\nPERINGATAN: masih ada PO menunggu approval senilai ${window.formatIDR(pendingPO)}.` : '');
+            } else {
+                message = `Ubah status proyek dari ${oldStatus} menjadi ${newStatus}?`;
+            }
+            if (!confirm(message)) return;
+
+            try {
+                const now = new Date().toISOString();
+                const history = Array.isArray(d.statusHistory) ? [...d.statusHistory] : [];
+                history.push({ from: oldStatus, to: newStatus, at: now, by: window.user.email || window.user.uid });
+                const data = {
+                    status: newStatus,
+                    statusUpdatedAt: now,
+                    statusUpdatedBy: window.user.email || window.user.uid,
+                    updatedAt: now,
+                    statusHistory: history
+                };
+                if (newStatus === 'Proses Pengerjaan' && oldStatus === 'Survei / Penawaran') data.startedAt = d.startedAt || now;
+                if (newStatus === 'Selesai') data.completedAt = now;
+                if (newStatus !== 'Selesai' && oldStatus === 'Selesai') data.completedAt = null;
+
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'deals', id), data);
+                window.closeDealDetails();
+            } catch (err) {
+                console.error('Update project status error:', err);
+                alert('Gagal mengubah tahap proyek: ' + err.message);
+            }
+        };
+
 
         window.isPOApproved = (po) => {
             const state = po?.approvalStatus || (po?.approved === true ? 'approved' : 'pending');
@@ -2800,7 +3134,9 @@ Lanjutkan?`);
                         terms: document.getElementById('deal-terms').value,
                         subtotal: sub, 
                         taxRate: tax,
-                        value: grandTotal
+                        value: grandTotal,
+                        updatedAt: new Date().toISOString(),
+                        updatedBy: window.user?.email || window.user?.uid || 'user'
                     };
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'deals', dealId), data);
                 } else {
@@ -2815,7 +3151,12 @@ Lanjutkan?`);
                         taxRate: tax, 
                         value: grandTotal,
                         date: new Date().toISOString().split('T')[0],
-                        invNum: `QT-${new Date().getFullYear()}${Date.now().toString().slice(-4)}`
+                        invNum: `QT-${new Date().getFullYear()}${Date.now().toString().slice(-4)}`,
+                        createdByUid: window.user?.uid || null,
+                        createdByEmail: window.user?.email || null,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        statusHistory: [{ from: null, to: 'Survei / Penawaran', at: new Date().toISOString(), by: window.user?.email || window.user?.uid || 'user' }]
                     };
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'deals'), data);
 
@@ -3540,16 +3881,63 @@ Lanjutkan?`);
             if(grandTotalDisp) grandTotalDisp.innerText = window.formatIDR(grandTotal);
         };
 
+        window.renderDealWorkflowModal = (d) => {
+            const box = document.getElementById('detail-deal-workflow');
+            if (!box || !d) return;
+            const stages = ['Survei / Penawaran', 'Proses Pengerjaan', 'Selesai'];
+            const current = Math.max(0, stages.indexOf(d.status || 'Survei / Penawaran'));
+            const stats = window.getDealCostSummary(d.id);
+            const value = Number(d.value) || 0;
+            const costPct = value > 0 ? (stats.committed / value) * 100 : 0;
+            const projectedPct = value > 0 ? (stats.projected / value) * 100 : 0;
+
+            const stageHTML = stages.map((name, idx) => {
+                const done = idx < current;
+                const active = idx === current;
+                const cls = done ? 'bg-green-600 text-white border-green-600' : active ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-slate-400 border-slate-300';
+                const icon = done ? '<i class="fa-solid fa-check"></i>' : String(idx + 1);
+                return `<div class="flex-1 flex flex-col items-center text-center min-w-0">
+                    <div class="w-8 h-8 rounded-full border-2 ${cls} flex items-center justify-center text-xs font-bold">${icon}</div>
+                    <div class="mt-1 text-[10px] font-bold ${active ? 'text-brand-700' : done ? 'text-green-700' : 'text-slate-400'}">${idx===0?'PENAWARAN':idx===1?'PROSES':'SELESAI'}</div>
+                </div>${idx < stages.length-1 ? `<div class="h-0.5 flex-1 mt-4 ${idx < current ? 'bg-green-500' : 'bg-slate-200'}"></div>` : ''}`;
+            }).join('');
+
+            let controls = window.getDealWorkflowActionHTML(d);
+            if (window.userRole === 'admin' && d.status === 'Proses Pengerjaan') {
+                controls += `<button onclick="window.updateDealStatus('${d.id}','Survei / Penawaran')" class="w-full mt-2 px-3 py-2 bg-slate-50 text-slate-600 hover:bg-slate-700 hover:text-white rounded-md border border-slate-200 text-[11px] font-bold transition-colors"><i class="fa-solid fa-arrow-left mr-1.5"></i>Kembalikan ke Penawaran</button>`;
+            }
+
+            box.innerHTML = `
+                <div class="flex justify-between items-center mb-4">
+                    <div>
+                        <h5 class="font-bold text-slate-800 text-sm">Alur Proyek</h5>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Status tersimpan ke Firebase dan digunakan oleh modul PO/biaya proyek.</p>
+                    </div>
+                </div>
+                <div class="flex items-start mb-5">${stageHTML}</div>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-slate-100 pt-4">
+                    <div class="bg-slate-50 rounded-lg p-2.5"><div class="text-[9px] font-bold text-slate-400 uppercase">Nilai Proyek</div><div class="text-xs font-bold text-slate-800 mt-1">${window.formatIDR(value)}</div></div>
+                    <div class="bg-slate-50 rounded-lg p-2.5"><div class="text-[9px] font-bold text-slate-400 uppercase">PO Berlaku</div><div class="text-xs font-bold text-slate-800 mt-1">${window.formatIDR(stats.approvedPO)}</div></div>
+                    <div class="bg-slate-50 rounded-lg p-2.5"><div class="text-[9px] font-bold text-slate-400 uppercase">Operasional</div><div class="text-xs font-bold text-slate-800 mt-1">${window.formatIDR(stats.operational)}</div></div>
+                    <div class="bg-slate-50 rounded-lg p-2.5"><div class="text-[9px] font-bold text-slate-400 uppercase">Biaya Tercatat</div><div class="text-xs font-bold ${costPct >= 80 ? 'text-red-600' : 'text-green-700'} mt-1">${costPct.toFixed(1)}%</div></div>
+                </div>
+                ${stats.pendingPO > 0 ? `<div class="mt-3 px-3 py-2 rounded-lg border ${projectedPct >= 80 ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-blue-50 border-blue-200 text-blue-700'} text-[10px] font-semibold"><i class="fa-solid fa-circle-info mr-1"></i>PO pending ${window.formatIDR(stats.pendingPO)}. Jika disetujui, total proyeksi biaya menjadi ${projectedPct.toFixed(1)}% dari nilai proyek.</div>` : ''}
+                <div class="mt-4">${controls || '<div class="text-center text-[10px] text-slate-400 font-semibold">Tahap proyek telah selesai.</div>'}</div>`;
+        };
+
         window.showDealDetails = (id) => {
             const d = window.deals.find(x => String(x.id) === String(id));
+            if (!d) return;
             document.getElementById('detail-deal-title').innerText = d.title;
             document.getElementById('detail-deal-client').innerText = window.clients.find(c=>String(c.id)===String(d.clientId))?.name || '...';
             document.getElementById('detail-deal-status').innerText = d.status;
             document.getElementById('detail-deal-value').innerText = window.formatIDR(d.value);
             document.getElementById('btn-print-deal').onclick = () => window.printQuotation(id);
+            window.renderDealWorkflowModal(d);
             document.getElementById('deal-modal').classList.remove('hidden');
             document.getElementById('deal-modal').classList.add('flex');
         };
+
         
         window.closeDealDetails = () => {
             document.getElementById('deal-modal').classList.add('hidden');
