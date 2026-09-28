@@ -164,6 +164,14 @@
                     <i class="fa-solid fa-cart-shopping w-5 text-center opacity-70"></i> Purchase Order (PO)
                 </button>
 
+                <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-brand-500/70 mb-2 mt-6">Modul Operasional</p>
+                <button onclick="window.switchTab('operations')" id="btn-operations" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all hover:bg-brand-900 hover:text-white font-medium text-sm text-slate-300">
+                    <i class="fa-solid fa-list-check w-5 text-center opacity-70"></i> Operasional
+                </button>
+                <button onclick="window.switchTab('overhead')" id="btn-overhead" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all hover:bg-brand-900 hover:text-white font-medium text-sm text-slate-300">
+                    <i class="fa-solid fa-building-circle-check w-5 text-center opacity-70"></i> Overhead
+                </button>
+
                 <p class="px-3 text-[10px] font-bold uppercase tracking-widest text-brand-500/70 mb-2 mt-6">Buku Besar & Kas</p>
                 <button onclick="window.switchTab('finance')" id="btn-finance" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-md transition-all hover:bg-brand-900 hover:text-white font-medium text-sm text-slate-300">
                     <i class="fa-solid fa-money-check-dollar w-5 text-center opacity-70"></i> Kas & Bank
@@ -529,6 +537,62 @@
                     </div>
                 </div>
 
+                <!-- OPERATIONS TAB -->
+                <div id="tab-operations" class="tab-content space-y-4 max-w-7xl mx-auto">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Kegiatan Operasional</h2>
+                            <p class="text-sm text-slate-500 mt-1">Pantau pekerjaan harian, PIC, jadwal, progres, dan referensi dokumen.</p>
+                        </div>
+                        <button onclick="window.toggleOperationModal(true)" class="bg-brand-600 text-white px-4 py-2.5 rounded-md text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-brand-700 transition-colors">
+                            <i class="fa-solid fa-plus"></i> Kegiatan Baru
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-slate-500">Total Kegiatan</p><p id="ops-total" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
+                        <div class="bg-white p-4 rounded-xl border border-amber-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-amber-600">Sedang Berjalan</p><p id="ops-progress" class="text-2xl font-bold text-amber-600 mt-1">0</p></div>
+                        <div class="bg-white p-4 rounded-xl border border-green-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-green-600">Selesai</p><p id="ops-complete" class="text-2xl font-bold text-green-600 mt-1">0</p></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-3 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-3">
+                            <input id="operations-search" type="text" oninput="window.renderOperations()" placeholder="Cari kegiatan, PIC, atau referensi..." class="flex-1 max-w-md px-3 py-1.5 text-sm border border-slate-300 rounded outline-none focus:border-brand-500">
+                            <select id="operations-status-filter" onchange="window.renderOperations()" class="px-3 py-1.5 text-sm border border-slate-300 rounded bg-white outline-none">
+                                <option value="">Semua Status</option><option>Rencana</option><option>Berjalan</option><option>Tertunda</option><option>Selesai</option>
+                            </select>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left data-grid"><thead><tr><th>Tanggal</th><th>Kegiatan & Referensi</th><th>PIC / Divisi</th><th>Target</th><th>Progres</th><th>Status</th><th class="text-center w-28">Aksi</th></tr></thead><tbody id="operations-tbody"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OVERHEAD TAB -->
+                <div id="tab-overhead" class="tab-content space-y-4 max-w-7xl mx-auto">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-800">Biaya Overhead</h2>
+                            <p class="text-sm text-slate-500 mt-1">Biaya tidak langsung perusahaan yang otomatis tercatat sebagai pengeluaran Kas & Bank.</p>
+                        </div>
+                        <button onclick="window.toggleOverheadModal(true)" class="bg-violet-600 text-white px-4 py-2.5 rounded-md text-sm font-bold shadow-sm flex items-center justify-center gap-2 hover:bg-violet-700 transition-colors">
+                            <i class="fa-solid fa-plus"></i> Catat Overhead
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-white p-4 rounded-xl border border-violet-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-violet-600">Overhead Bulan Ini</p><p id="overhead-month-total" class="text-xl font-bold text-violet-700 mt-1">Rp 0</p></div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-slate-500">Total Keseluruhan</p><p id="overhead-all-total" class="text-xl font-bold text-slate-800 mt-1">Rp 0</p></div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm"><p class="text-[10px] font-bold uppercase text-slate-500">Jumlah Transaksi</p><p id="overhead-count" class="text-2xl font-bold text-slate-800 mt-1">0</p></div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-3 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row gap-3">
+                            <input id="overhead-search" type="text" oninput="window.renderOverheads()" placeholder="Cari kategori, keterangan, atau vendor..." class="flex-1 max-w-md px-3 py-1.5 text-sm border border-slate-300 rounded outline-none focus:border-violet-500">
+                            <input id="overhead-month-filter" type="month" onchange="window.renderOverheads()" class="px-3 py-1.5 text-sm border border-slate-300 rounded bg-white outline-none">
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left data-grid"><thead><tr><th>Tanggal</th><th>Kategori</th><th>Keterangan / Vendor</th><th class="text-right">DPP</th><th class="text-right">PPN</th><th class="text-right">Total</th><th class="text-center w-28">Aksi</th></tr></thead><tbody id="overhead-tbody"></tbody></table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- FINANCE TAB -->
                 <div id="tab-finance" class="tab-content space-y-4 max-w-7xl mx-auto">
                     <div class="flex justify-between items-end mb-4">
@@ -608,7 +672,19 @@
                                     <span id="rep-dpp-in" class="font-bold text-green-600">Rp 0</span>
                                 </div>
                                 <div class="flex justify-between items-center text-sm">
-                                    <span class="text-slate-600">HPP & Biaya Ops (DPP Keluar)</span>
+                                    <span class="text-slate-600">HPP / Produksi</span>
+                                    <span id="rep-hpp" class="font-bold text-red-600">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-slate-600">Biaya Operasional</span>
+                                    <span id="rep-operational" class="font-bold text-orange-600">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-slate-600">Biaya Overhead</span>
+                                    <span id="rep-overhead" class="font-bold text-violet-600">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between items-center text-sm border-t border-slate-100 pt-3">
+                                    <span class="text-slate-700 font-bold">Total Biaya (DPP Keluar)</span>
                                     <span id="rep-dpp-out" class="font-bold text-red-600">Rp 0</span>
                                 </div>
                                 <div class="border-t border-slate-200 pt-3 flex justify-between items-center">
@@ -1072,6 +1148,70 @@
         </div>
     </div>
 
+    <!-- MODAL KEGIATAN OPERASIONAL -->
+    <div id="operation-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl overflow-hidden my-4">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-brand-900 text-white">
+                <h3 id="operation-modal-title" class="font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-list-check text-brand-300 mr-2"></i>Kegiatan Operasional Baru</h3>
+                <button type="button" onclick="window.toggleOperationModal(false)" class="text-slate-300 hover:text-white">✕</button>
+            </div>
+            <form id="operation-form" onsubmit="window.handleOperation(event)" class="p-6 space-y-4">
+                <input type="hidden" id="operation-id">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Nama Kegiatan *</label>
+                    <input id="operation-title" type="text" required placeholder="Contoh: Pengiriman pompa ke lokasi proyek" class="w-full border border-slate-300 p-2.5 rounded-md text-sm outline-none focus:border-brand-500">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tanggal Mulai *</label><input id="operation-date" type="date" required class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Target Selesai</label><input id="operation-due-date" type="date" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Status *</label><select id="operation-status" required class="w-full border border-slate-300 p-2 rounded-md text-sm bg-white"><option>Rencana</option><option>Berjalan</option><option>Tertunda</option><option>Selesai</option></select></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Divisi *</label><input id="operation-division" type="text" required placeholder="Produksi / Logistik / Sales" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Penanggung Jawab / PIC *</label><input id="operation-pic" type="text" required class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Lokasi</label><input id="operation-location" type="text" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="sm:col-span-2"><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Referensi PO / Kontrak / Surat Jalan</label><select id="operation-reference" class="w-full border border-slate-300 p-2 rounded-md text-sm bg-white"></select></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Progres (%)</label><input id="operation-progress-value" type="number" min="0" max="100" step="1" value="0" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                </div>
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Catatan Operasional</label><textarea id="operation-notes" class="w-full border border-slate-300 p-2 rounded-md text-sm h-24 resize-none"></textarea></div>
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="window.toggleOperationModal(false)" class="px-5 py-2.5 text-sm border border-slate-300 text-slate-600 rounded-md hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 text-sm font-bold bg-brand-600 text-white rounded-md hover:bg-brand-700"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan & Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL BIAYA OVERHEAD -->
+    <div id="overhead-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden my-4">
+            <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-violet-800 text-white">
+                <h3 id="overhead-modal-title" class="font-bold text-sm uppercase tracking-wider"><i class="fa-solid fa-building-circle-check text-violet-200 mr-2"></i>Catat Biaya Overhead</h3>
+                <button type="button" onclick="window.toggleOverheadModal(false)" class="text-violet-200 hover:text-white">✕</button>
+            </div>
+            <form id="overhead-form" onsubmit="window.handleOverhead(event)" class="p-6 space-y-4">
+                <input type="hidden" id="overhead-id">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tanggal *</label><input id="overhead-date" type="date" required class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kategori Overhead *</label><select id="overhead-category" required class="w-full border border-slate-300 p-2 rounded-md text-sm bg-white"><option>Sewa Kantor / Workshop</option><option>Listrik, Air & Internet</option><option>Gaji Staf Nonproduksi</option><option>Penyusutan Aset</option><option>Asuransi</option><option>Administrasi Bank</option><option>Software & Langganan</option><option>Legal & Perizinan</option><option>Perawatan Fasilitas</option><option>Overhead Lain-lain</option></select></div>
+                    <div class="sm:col-span-2"><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Keterangan *</label><input id="overhead-description" type="text" required placeholder="Contoh: Sewa workshop bulan September" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Vendor / Penerima</label><input id="overhead-vendor" type="text" class="w-full border border-slate-300 p-2 rounded-md text-sm"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Metode Pembayaran</label><select id="overhead-payment-method" class="w-full border border-slate-300 p-2 rounded-md text-sm bg-white"><option>Transfer Bank</option><option>Tunai</option><option>Kas Kecil</option><option>Kartu / E-Wallet</option><option>Belum Dibayar</option></select></div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-violet-50 border border-violet-100 rounded-lg p-4">
+                    <div><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Nilai Dasar / DPP *</label><input id="overhead-subtotal" type="number" required min="0" oninput="window.calcOverheadTotal()" class="w-full border border-slate-300 p-2 rounded-md text-sm font-bold"></div>
+                    <div><label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">PPN</label><select id="overhead-tax-rate" onchange="window.calcOverheadTotal()" class="w-full border border-slate-300 p-2 rounded-md text-sm bg-white"><option value="0">0% / Non-PPN</option><option value="11">11%</option><option value="12">12%</option></select></div>
+                    <div><label class="block text-[11px] font-bold text-violet-700 uppercase mb-1">Total Keluar</label><input id="overhead-total" type="number" readonly class="w-full border border-violet-200 bg-white p-2 rounded-md text-sm font-bold text-violet-700"></div>
+                </div>
+                <div><label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Catatan</label><textarea id="overhead-notes" class="w-full border border-slate-300 p-2 rounded-md text-sm h-20 resize-none"></textarea></div>
+                <div class="flex justify-end gap-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="window.toggleOverheadModal(false)" class="px-5 py-2.5 text-sm border border-slate-300 text-slate-600 rounded-md hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="px-6 py-2.5 text-sm font-bold bg-violet-600 text-white rounded-md hover:bg-violet-700"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan & Tutup</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL INVOICE -->
     <div id="inv-create-modal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-50 overflow-y-auto">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -1209,10 +1349,18 @@
                         <input id="inp-amount" type="number" required readonly class="w-full border border-slate-300 bg-white p-2 rounded-md text-sm font-bold outline-none">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kode Akun / Kategori Biaya *</label>
-                        <select id="inp-category" onchange="window.checkClientRequired()" required class="w-full border border-slate-300 p-2 rounded-md text-xs bg-white"></select>
+                        <select id="inp-category" onchange="window.updateCostClassFromCategory();window.checkClientRequired()" required class="w-full border border-slate-300 p-2 rounded-md text-xs bg-white"></select>
+                    </div>
+                    <div id="inp-cost-class-container" class="hidden">
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Klasifikasi Biaya *</label>
+                        <select id="inp-cost-class" class="w-full border border-slate-300 p-2 rounded-md text-xs bg-white">
+                            <option value="HPP">HPP / Produksi</option>
+                            <option value="Operasional" selected>Operasional</option>
+                            <option value="Overhead">Overhead</option>
+                        </select>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tautkan ke Klien/Supplier</label>
@@ -1466,6 +1614,7 @@
         window.inventory = [];
         window.purchaseOrders = [];
         window.deliveryNotes = [];
+        window.operations = [];
         
         window.companySettings = {
             name: "PT KALIMAJA SURYA ALAM",
@@ -1774,9 +1923,14 @@
                 window.renderDeliveryNotes();
             });
 
+            onSnapshot(dataPath('operations'), (snapshot) => {
+                window.operations = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
+                window.renderOperations();
+            });
+
             onSnapshot(dataPath('transactions'), (snapshot) => {
                 window.transactions = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderFinance(); window.renderDashboard(); window.renderReports();
+                window.renderFinance(); window.renderDashboard(); window.renderReports(); window.renderOverheads();
             });
         }
 
@@ -1980,6 +2134,97 @@
             }).join('');
         };
 
+        window.getOperationReferenceLabel = (value) => {
+            if(!value || !value.includes(':')) return '-';
+            const [type, id] = value.split(':');
+            if(type === 'po') {
+                const item = window.purchaseOrders.find(row => String(row.id) === String(id));
+                return item ? `PO: ${item.poNum || item.title || '-'}` : 'PO (arsip)';
+            }
+            if(type === 'deal') {
+                const item = window.deals.find(row => String(row.id) === String(id));
+                return item ? `Kontrak: ${item.invNum || item.title || '-'}` : 'Kontrak (arsip)';
+            }
+            if(type === 'delivery') {
+                const item = window.deliveryNotes.find(row => String(row.id) === String(id));
+                return item ? `SJ: ${item.deliveryNum || '-'}` : 'Surat Jalan (arsip)';
+            }
+            return '-';
+        };
+
+        window.renderOperations = () => {
+            const tbody = document.getElementById('operations-tbody');
+            if(!tbody) return;
+            const query = (document.getElementById('operations-search')?.value || '').trim().toLowerCase();
+            const statusFilter = document.getElementById('operations-status-filter')?.value || '';
+            const sorted = [...window.operations].sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+            const rows = sorted.filter(item => {
+                const reference = window.getOperationReferenceLabel(item.reference).toLowerCase();
+                const matchesQuery = [item.title, item.pic, item.division, item.location, reference].some(value => String(value || '').toLowerCase().includes(query));
+                return matchesQuery && (!statusFilter || item.status === statusFilter);
+            });
+
+            document.getElementById('ops-total').innerText = window.operations.length;
+            document.getElementById('ops-progress').innerText = window.operations.filter(item => item.status === 'Berjalan').length;
+            document.getElementById('ops-complete').innerText = window.operations.filter(item => item.status === 'Selesai').length;
+
+            if(rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic">${query || statusFilter ? 'Kegiatan tidak ditemukan' : 'Belum ada kegiatan operasional'}</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = rows.map(item => {
+                const progress = Math.max(0, Math.min(100, Number(item.progress) || 0));
+                const statusClass = item.status === 'Selesai' ? 'bg-green-100 text-green-700 border-green-200' : item.status === 'Berjalan' ? 'bg-amber-100 text-amber-700 border-amber-200' : item.status === 'Tertunda' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-slate-100 text-slate-600 border-slate-200';
+                return `<tr class="border-b hover:bg-slate-50">
+                    <td class="p-4 text-xs text-slate-500">${window.escapeHtml(item.date || '-')}</td>
+                    <td class="p-4"><p class="font-bold text-slate-800">${window.escapeHtml(item.title || '-')}</p><p class="text-[10px] text-brand-600 mt-1">${window.escapeHtml(window.getOperationReferenceLabel(item.reference))}</p></td>
+                    <td class="p-4"><p class="font-bold text-slate-700 text-xs">${window.escapeHtml(item.pic || '-')}</p><p class="text-[10px] text-slate-400">${window.escapeHtml(item.division || '-')}</p></td>
+                    <td class="p-4 text-xs text-slate-500">${window.escapeHtml(item.dueDate || '-')}</td>
+                    <td class="p-4 min-w-32"><div class="flex items-center gap-2"><div class="h-2 flex-1 bg-slate-200 rounded overflow-hidden"><div class="h-full bg-brand-500" style="width:${progress}%"></div></div><span class="text-[10px] font-bold">${progress}%</span></div></td>
+                    <td class="p-4"><span class="px-2 py-1 rounded border text-[9px] font-bold uppercase ${statusClass}">${window.escapeHtml(item.status || 'Rencana')}</span></td>
+                    <td class="p-4"><div class="flex justify-center gap-1.5"><button onclick="window.openEditOperationModal('${item.id}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded hover:bg-amber-500 hover:text-white" title="Edit"><i class="fa-solid fa-pen"></i></button><button onclick="window.deleteOperation('${item.id}')" class="px-2.5 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-500 hover:text-white" title="Hapus"><i class="fa-solid fa-trash"></i></button></div></td>
+                </tr>`;
+            }).join('');
+        };
+
+        window.isOverheadTransaction = (tx) => tx.type === 'Pengeluaran' && (tx.costClass === 'Overhead' || [
+            'Sewa Kantor / Workshop', 'Listrik, Air & Internet', 'Gaji Staf Nonproduksi', 'Penyusutan Aset', 'Asuransi',
+            'Administrasi Bank', 'Software & Langganan', 'Legal & Perizinan', 'Perawatan Fasilitas', 'Overhead Lain-lain'
+        ].includes(tx.category));
+
+        window.renderOverheads = () => {
+            const tbody = document.getElementById('overhead-tbody');
+            if(!tbody) return;
+            const query = (document.getElementById('overhead-search')?.value || '').trim().toLowerCase();
+            const month = document.getElementById('overhead-month-filter')?.value || '';
+            const allRows = window.transactions.filter(window.isOverheadTransaction);
+            const rows = [...allRows].filter(tx => {
+                const matchesQuery = [tx.category, tx.description, tx.vendor, tx.paymentMethod].some(value => String(value || '').toLowerCase().includes(query));
+                return matchesQuery && (!month || String(tx.date || '').startsWith(month));
+            }).sort((a,b) => String(b.date || '').localeCompare(String(a.date || '')));
+            const currentMonth = new Date().toISOString().slice(0,7);
+            const monthTotal = allRows.filter(tx => String(tx.date || '').startsWith(currentMonth)).reduce((sum,tx) => sum + (Number(tx.amount) || 0), 0);
+            const allTotal = allRows.reduce((sum,tx) => sum + (Number(tx.amount) || 0), 0);
+            document.getElementById('overhead-month-total').innerText = window.formatIDR(monthTotal);
+            document.getElementById('overhead-all-total').innerText = window.formatIDR(allTotal);
+            document.getElementById('overhead-count').innerText = allRows.length;
+
+            if(rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-slate-400 italic">${query || month ? 'Data overhead tidak ditemukan' : 'Belum ada biaya overhead'}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = rows.map(tx => `<tr class="border-b hover:bg-slate-50">
+                <td class="p-4 text-xs text-slate-500">${window.escapeHtml(tx.date || '-')}</td>
+                <td class="p-4"><span class="px-2 py-1 rounded bg-violet-50 text-violet-700 border border-violet-200 text-[10px] font-bold">${window.escapeHtml(tx.category || 'Overhead')}</span></td>
+                <td class="p-4"><p class="font-bold text-slate-800 text-sm">${window.escapeHtml(tx.description || '-')}</p><p class="text-[10px] text-slate-400">${window.escapeHtml(tx.vendor || '-')} ${tx.paymentMethod ? '• ' + window.escapeHtml(tx.paymentMethod) : ''}</p></td>
+                <td class="p-4 text-right text-slate-600">${window.formatIDR(tx.subtotal)}</td>
+                <td class="p-4 text-right text-slate-500">${window.formatIDR(tx.ppn)}</td>
+                <td class="p-4 text-right font-bold text-red-600">${window.formatIDR(tx.amount)}</td>
+                <td class="p-4"><div class="flex justify-center gap-1.5"><button onclick="window.openEditOverheadModal('${tx.id}')" class="px-2.5 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded hover:bg-amber-500 hover:text-white" title="Edit"><i class="fa-solid fa-pen"></i></button><button onclick="window.deleteTx('${tx.id}')" class="px-2.5 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded hover:bg-red-500 hover:text-white" title="Hapus"><i class="fa-solid fa-trash"></i></button></div></td>
+            </tr>`).join('');
+        };
+
         window.renderInvoices = () => {
             let totalNilai = 0, totalDibayar = 0, totalPiutang = 0;
             const tb = document.getElementById('invoices-tbody');
@@ -2038,12 +2283,29 @@
         };
 
         window.renderReports = () => {
-            let ppnOut=0, ppnIn=0, dppIn=0, dppOut=0;
-            window.transactions.forEach(tx => { if(tx.type==='Pemasukan'){ dppIn+=tx.subtotal; ppnOut+=tx.ppn; } else { dppOut+=tx.subtotal; ppnIn+=tx.ppn; }});
+            let ppnOut=0, ppnIn=0, dppIn=0, dppOut=0, hpp=0, operational=0, overhead=0;
+            window.transactions.forEach(tx => {
+                const subtotal = Number(tx.subtotal) || 0;
+                const ppn = Number(tx.ppn) || 0;
+                if(tx.type === 'Pemasukan') {
+                    dppIn += subtotal; ppnOut += ppn;
+                } else {
+                    dppOut += subtotal; ppnIn += ppn;
+                    const costClass = tx.costClass || (window.isOverheadTransaction(tx) ? 'Overhead' : 'Operasional');
+                    if(costClass === 'HPP') hpp += subtotal;
+                    else if(costClass === 'Overhead') overhead += subtotal;
+                    else operational += subtotal;
+                }
+            });
             document.getElementById('rep-ppn-out').innerText=window.formatIDR(ppnOut); document.getElementById('rep-ppn-in').innerText=window.formatIDR(ppnIn);
             const diff=ppnOut-ppnIn;
             document.getElementById('rep-ppn-status').innerText = diff>0?`Kurang Bayar: ${window.formatIDR(diff)}`: (diff<0?`Lebih Bayar: ${window.formatIDR(Math.abs(diff))}`:'Nihil');
-            document.getElementById('rep-dpp-in').innerText=window.formatIDR(dppIn); document.getElementById('rep-dpp-out').innerText=window.formatIDR(dppOut); document.getElementById('rep-net-income').innerText=window.formatIDR(dppIn-dppOut);
+            document.getElementById('rep-dpp-in').innerText=window.formatIDR(dppIn);
+            document.getElementById('rep-hpp').innerText=window.formatIDR(hpp);
+            document.getElementById('rep-operational').innerText=window.formatIDR(operational);
+            document.getElementById('rep-overhead').innerText=window.formatIDR(overhead);
+            document.getElementById('rep-dpp-out').innerText=window.formatIDR(dppOut);
+            document.getElementById('rep-net-income').innerText=window.formatIDR(dppIn-dppOut);
         };
 
         window.renderInventory = () => {
@@ -2371,6 +2633,97 @@
             }
         };
 
+        window.handleOperation = async (e) => {
+            e.preventDefault();
+            const btn = e.submitter || e.target.querySelector('button[type="submit"]');
+            const oldText = btn?.innerHTML || 'Simpan & Tutup';
+            if(btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...'; btn.disabled = true; }
+            let modalClosed = false;
+            try {
+                if(!window.user) throw new Error('Akses ditolak. Silakan masuk kembali.');
+                const operationId = document.getElementById('operation-id').value;
+                const progress = Math.max(0, Math.min(100, parseFloat(document.getElementById('operation-progress-value').value) || 0));
+                const data = {
+                    title: document.getElementById('operation-title').value.trim(),
+                    date: document.getElementById('operation-date').value,
+                    dueDate: document.getElementById('operation-due-date').value,
+                    status: document.getElementById('operation-status').value,
+                    division: document.getElementById('operation-division').value.trim(),
+                    pic: document.getElementById('operation-pic').value.trim(),
+                    location: document.getElementById('operation-location').value.trim(),
+                    reference: document.getElementById('operation-reference').value,
+                    progress: document.getElementById('operation-status').value === 'Selesai' ? 100 : progress,
+                    notes: document.getElementById('operation-notes').value.trim(),
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.user.email || window.user.uid
+                };
+                const modal = document.getElementById('operation-modal');
+                modal.classList.add('hidden'); modal.classList.remove('flex'); modalClosed = true;
+                if(operationId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'operations', operationId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    data.createdBy = window.user.email || window.user.uid;
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'operations'), data);
+                }
+                e.target.reset();
+                document.getElementById('operation-id').value = '';
+            } catch(err) {
+                console.error('Operation Error:', err);
+                if(modalClosed) { document.getElementById('operation-modal').classList.remove('hidden'); document.getElementById('operation-modal').classList.add('flex'); }
+                alert('Gagal menyimpan kegiatan operasional: ' + err.message);
+            } finally {
+                if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            }
+        };
+
+        window.handleOverhead = async (e) => {
+            e.preventDefault();
+            const btn = e.submitter || e.target.querySelector('button[type="submit"]');
+            const oldText = btn?.innerHTML || 'Simpan & Tutup';
+            if(btn) { btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...'; btn.disabled = true; }
+            let modalClosed = false;
+            try {
+                if(!window.user) throw new Error('Akses ditolak. Silakan masuk kembali.');
+                const overheadId = document.getElementById('overhead-id').value;
+                const subtotal = parseFloat(document.getElementById('overhead-subtotal').value) || 0;
+                const taxRate = parseFloat(document.getElementById('overhead-tax-rate').value) || 0;
+                if(subtotal <= 0) throw new Error('Nilai overhead harus lebih dari nol.');
+                const ppn = subtotal * (taxRate / 100);
+                const data = {
+                    type: 'Pengeluaran',
+                    date: document.getElementById('overhead-date').value,
+                    category: document.getElementById('overhead-category').value,
+                    description: document.getElementById('overhead-description').value.trim(),
+                    vendor: document.getElementById('overhead-vendor').value.trim(),
+                    paymentMethod: document.getElementById('overhead-payment-method').value,
+                    subtotal, taxRate, ppn, amount: subtotal + ppn,
+                    costClass: 'Overhead',
+                    clientId: null,
+                    notes: document.getElementById('overhead-notes').value.trim(),
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.user.email || window.user.uid
+                };
+                const modal = document.getElementById('overhead-modal');
+                modal.classList.add('hidden'); modal.classList.remove('flex'); modalClosed = true;
+                if(overheadId) {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'transactions', overheadId), data);
+                } else {
+                    data.createdAt = new Date().toISOString();
+                    data.createdBy = window.user.email || window.user.uid;
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), data);
+                }
+                e.target.reset();
+                document.getElementById('overhead-id').value = '';
+            } catch(err) {
+                console.error('Overhead Error:', err);
+                if(modalClosed) { document.getElementById('overhead-modal').classList.remove('hidden'); document.getElementById('overhead-modal').classList.add('flex'); }
+                alert('Gagal menyimpan biaya overhead: ' + err.message);
+            } finally {
+                if(btn) { btn.innerHTML = oldText; btn.disabled = false; }
+            }
+        };
+
         window.handleNewInvoice = async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
@@ -2447,7 +2800,8 @@
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'transactions'), {
                     type: document.getElementById('inp-type').value, date: document.getElementById('inp-date').value, description: document.getElementById('inp-desc').value,
                     subtotal: sub, taxRate: tax, ppn: sub*(tax/100), amount: parseFloat(document.getElementById('inp-amount').value),
-                    category: document.getElementById('inp-category').value, clientId: document.getElementById('inp-client').value || null
+                    category: document.getElementById('inp-category').value, clientId: document.getElementById('inp-client').value || null,
+                    costClass: document.getElementById('inp-type').value === 'Pengeluaran' ? document.getElementById('inp-cost-class').value : null
                 });
                 window.toggleModal(false); e.target.reset();
             } catch (err) { 
@@ -2533,6 +2887,7 @@
         window.deleteInventory = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus data persediaan barang ini?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id)); };
         window.deletePO = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus dokumen PO ini permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id)); };
         window.deleteDeliveryNote = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus Surat Jalan ini secara permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'delivery_notes', id)); };
+        window.deleteOperation = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus kegiatan operasional ini secara permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'operations', id)); };
 
         // --- UI TOGGLERS & MODALS ---
         window.switchTab = (id) => {
@@ -3013,6 +3368,106 @@
             modal.classList.add('flex');
         };
 
+        // --- LOGIKA OPERASIONAL ---
+        window.populateOperationReferenceDropdown = (selectedValue = '') => {
+            const select = document.getElementById('operation-reference');
+            if(!select) return;
+            const poOptions = window.purchaseOrders.map(item => `<option value="po:${item.id}">PO — ${window.escapeHtml(item.poNum || item.title || '-')}</option>`).join('');
+            const dealOptions = window.deals.map(item => `<option value="deal:${item.id}">Kontrak — ${window.escapeHtml(item.invNum || item.title || '-')}</option>`).join('');
+            const deliveryOptions = window.deliveryNotes.map(item => `<option value="delivery:${item.id}">Surat Jalan — ${window.escapeHtml(item.deliveryNum || '-')}</option>`).join('');
+            select.innerHTML = '<option value="">- Tanpa Referensi Dokumen -</option>' +
+                (poOptions ? `<optgroup label="Purchase Order">${poOptions}</optgroup>` : '') +
+                (dealOptions ? `<optgroup label="Kontrak / Proyek">${dealOptions}</optgroup>` : '') +
+                (deliveryOptions ? `<optgroup label="Surat Jalan">${deliveryOptions}</optgroup>` : '');
+            if(selectedValue) {
+                if(![...select.options].some(option => option.value === selectedValue)) {
+                    const archived = document.createElement('option'); archived.value = selectedValue; archived.textContent = '[Referensi Arsip]'; select.appendChild(archived);
+                }
+                select.value = selectedValue;
+            }
+        };
+
+        window.toggleOperationModal = (show) => {
+            const modal = document.getElementById('operation-modal');
+            const form = document.getElementById('operation-form');
+            if(show) {
+                form.reset();
+                document.getElementById('operation-id').value = '';
+                document.getElementById('operation-modal-title').innerHTML = '<i class="fa-solid fa-list-check text-brand-300 mr-2"></i>Kegiatan Operasional Baru';
+                document.getElementById('operation-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('operation-status').value = 'Rencana';
+                document.getElementById('operation-progress-value').value = '0';
+                window.populateOperationReferenceDropdown();
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden'); modal.classList.remove('flex'); form.reset(); document.getElementById('operation-id').value = '';
+            }
+        };
+
+        window.openEditOperationModal = (id) => {
+            const item = window.operations.find(row => String(row.id) === String(id));
+            if(!item) return;
+            const modal = document.getElementById('operation-modal');
+            document.getElementById('operation-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-300 mr-2"></i>Edit Kegiatan Operasional';
+            document.getElementById('operation-id').value = item.id;
+            document.getElementById('operation-title').value = item.title || '';
+            document.getElementById('operation-date').value = item.date || '';
+            document.getElementById('operation-due-date').value = item.dueDate || '';
+            document.getElementById('operation-status').value = item.status || 'Rencana';
+            document.getElementById('operation-division').value = item.division || '';
+            document.getElementById('operation-pic').value = item.pic || '';
+            document.getElementById('operation-location').value = item.location || '';
+            document.getElementById('operation-progress-value').value = item.progress || 0;
+            document.getElementById('operation-notes').value = item.notes || '';
+            window.populateOperationReferenceDropdown(item.reference || '');
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        };
+
+        // --- LOGIKA OVERHEAD ---
+        window.calcOverheadTotal = () => {
+            const subtotal = parseFloat(document.getElementById('overhead-subtotal')?.value) || 0;
+            const taxRate = parseFloat(document.getElementById('overhead-tax-rate')?.value) || 0;
+            if(document.getElementById('overhead-total')) document.getElementById('overhead-total').value = subtotal + (subtotal * taxRate / 100);
+        };
+
+        window.toggleOverheadModal = (show) => {
+            const modal = document.getElementById('overhead-modal');
+            const form = document.getElementById('overhead-form');
+            if(show) {
+                form.reset();
+                document.getElementById('overhead-id').value = '';
+                document.getElementById('overhead-modal-title').innerHTML = '<i class="fa-solid fa-building-circle-check text-violet-200 mr-2"></i>Catat Biaya Overhead';
+                document.getElementById('overhead-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('overhead-tax-rate').value = '0';
+                window.calcOverheadTotal();
+                modal.classList.remove('hidden'); modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden'); modal.classList.remove('flex'); form.reset(); document.getElementById('overhead-id').value = '';
+            }
+        };
+
+        window.openEditOverheadModal = (id) => {
+            const tx = window.transactions.find(row => String(row.id) === String(id));
+            if(!tx) return;
+            document.getElementById('overhead-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-amber-200 mr-2"></i>Edit Biaya Overhead';
+            document.getElementById('overhead-id').value = tx.id;
+            document.getElementById('overhead-date').value = tx.date || '';
+            const categorySelect = document.getElementById('overhead-category');
+            const categoryValue = tx.category || 'Overhead Lain-lain';
+            if(![...categorySelect.options].some(option => option.value === categoryValue)) {
+                const option = document.createElement('option'); option.value = categoryValue; option.textContent = categoryValue; categorySelect.appendChild(option);
+            }
+            categorySelect.value = categoryValue;
+            document.getElementById('overhead-description').value = tx.description || '';
+            document.getElementById('overhead-vendor').value = tx.vendor || '';
+            document.getElementById('overhead-payment-method').value = tx.paymentMethod || 'Transfer Bank';
+            document.getElementById('overhead-subtotal').value = tx.subtotal || 0;
+            document.getElementById('overhead-tax-rate').value = String(tx.taxRate || 0);
+            document.getElementById('overhead-notes').value = tx.notes || '';
+            window.calcOverheadTotal();
+            document.getElementById('overhead-modal').classList.remove('hidden'); document.getElementById('overhead-modal').classList.add('flex');
+        };
+
 
         window.showInventoryDetails = (id) => {
             const item = window.inventory.find(x => String(x.id) === String(id));
@@ -3190,7 +3645,7 @@
                         <option value="Beli Komponen Mesin">Beli Komponen (Dinamo, Diesel, Sparepart)</option>
                         <option value="Biaya Pabrikasi & Bengkel">Biaya Pabrikasi (Las, Bubut, Cat)</option>
                     </optgroup>
-                    <optgroup label="Operasional Perusahaan">
+                    <optgroup label="Biaya Operasional">
                         <option value="Gaji Karyawan">Gaji Karyawan & Tunjangan</option>
                         <option value="Upah Tenaga Harian">Upah Tukang / Tenaga Harian</option>
                         <option value="Logistik & Ekspedisi">Biaya Logistik & Ekspedisi Pengiriman</option>
@@ -3200,9 +3655,37 @@
                         <option value="Pajak & Perizinan">Pajak, Legal & Perizinan</option>
                         <option value="Pengeluaran Lain-lain">Pengeluaran Lain-lain</option>
                     </optgroup>
+                    <optgroup label="Biaya Overhead (Tidak Langsung)">
+                        <option value="Sewa Kantor / Workshop">Sewa Kantor / Workshop</option>
+                        <option value="Listrik, Air & Internet">Listrik, Air & Internet</option>
+                        <option value="Gaji Staf Nonproduksi">Gaji Staf Nonproduksi</option>
+                        <option value="Penyusutan Aset">Penyusutan Aset</option>
+                        <option value="Asuransi">Asuransi</option>
+                        <option value="Administrasi Bank">Administrasi Bank</option>
+                        <option value="Software & Langganan">Software & Langganan</option>
+                        <option value="Legal & Perizinan">Legal & Perizinan</option>
+                        <option value="Perawatan Fasilitas">Perawatan Fasilitas</option>
+                        <option value="Overhead Lain-lain">Overhead Lain-lain</option>
+                    </optgroup>
                 `;
             }
+            const costClassContainer = document.getElementById('inp-cost-class-container');
+            const costClassSelect = document.getElementById('inp-cost-class');
+            const isExpense = type === 'Pengeluaran';
+            costClassContainer.classList.toggle('hidden', !isExpense);
+            costClassSelect.required = isExpense;
+            window.updateCostClassFromCategory();
             window.checkClientRequired();
+        };
+
+        window.updateCostClassFromCategory = () => {
+            const type = document.getElementById('inp-type')?.value;
+            const category = document.getElementById('inp-category')?.value;
+            const select = document.getElementById('inp-cost-class');
+            if(!select || type !== 'Pengeluaran') return;
+            const hppCategories = ['Beli Bahan Baku', 'Beli Komponen Mesin', 'Biaya Pabrikasi & Bengkel'];
+            const overheadCategories = ['Sewa Kantor / Workshop', 'Listrik, Air & Internet', 'Gaji Staf Nonproduksi', 'Penyusutan Aset', 'Asuransi', 'Administrasi Bank', 'Software & Langganan', 'Legal & Perizinan', 'Perawatan Fasilitas', 'Overhead Lain-lain'];
+            select.value = hppCategories.includes(category) ? 'HPP' : (overheadCategories.includes(category) ? 'Overhead' : 'Operasional');
         };
 
         window.checkClientRequired = () => {
