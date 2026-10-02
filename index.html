@@ -309,6 +309,7 @@
                             <i class="fa-solid fa-plus"></i> Pelanggan Baru
                         </button>
                     </div>
+                    <div id="po-storage-notice" class="hidden bg-amber-50 border border-amber-200 text-amber-800 px-4 py-3 rounded-lg text-xs"><i class="fa-solid fa-triangle-exclamation mr-2"></i><b>Mode perangkat aktif:</b> izin Firebase untuk Purchase Order belum tersedia. PO tetap tersimpan di browser komputer ini dan dapat dipakai sebagai acuan Surat Jalan.</div>
                     
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
                         <div class="p-3 border-b border-slate-200 bg-slate-50 flex gap-3 items-center">
@@ -1745,8 +1746,8 @@
         window.payrolls = [];
 
         // Penyimpanan cadangan untuk modul baru apabila Firestore belum diberi izin.
-        window.moduleStorageMode = { employees: 'cloud', payrolls: 'cloud' };
-        window.localModuleKeys = { employees: 'ksa_erp_employees_v1', payrolls: 'ksa_erp_payrolls_v1' };
+        window.moduleStorageMode = { employees: 'cloud', payrolls: 'cloud', purchaseOrders: 'cloud' };
+        window.localModuleKeys = { employees: 'ksa_erp_employees_v1', payrolls: 'ksa_erp_payrolls_v1', purchaseOrders: 'ksa_erp_purchase_orders_v1' };
         window.isPermissionError = (error) => ['permission-denied', 'firestore/permission-denied'].includes(error?.code) || /permission/i.test(error?.message || '');
         window.readLocalModule = (moduleName) => {
             try {
@@ -1760,6 +1761,7 @@
         window.refreshLocalModule = (moduleName) => {
             if(moduleName === 'employees') { window.renderEmployees?.(); window.populatePayrollEmployeeDropdown?.(); }
             if(moduleName === 'payrolls') window.renderPayrolls?.();
+            if(moduleName === 'purchaseOrders') { window.renderPOs?.(); window.populateDeliveryReferenceDropdown?.(); }
         };
         window.activateLocalModule = (moduleName) => {
             window.moduleStorageMode[moduleName] = 'local';
@@ -1769,7 +1771,8 @@
                 else if(item?.id) merged.set(String(item.id), item);
             });
             window[moduleName] = [...merged.values()];
-            document.getElementById(moduleName === 'employees' ? 'employee-storage-notice' : 'payroll-storage-notice')?.classList.remove('hidden');
+            const noticeIds = {employees:'employee-storage-notice', payrolls:'payroll-storage-notice', purchaseOrders:'po-storage-notice'};
+            document.getElementById(noticeIds[moduleName])?.classList.remove('hidden');
             window.refreshLocalModule(moduleName);
         };
         window.saveLocalModuleRecord = (moduleName, data, id = '') => {
@@ -2055,8 +2058,11 @@
 
             onSnapshot(dataPath('purchase_orders'), (snapshot) => {
                 window.purchaseOrders = snapshot.docs.map(d => ({id: d.id, ...d.data()}));
-                window.renderPOs();
-                window.populateDeliveryReferenceDropdown();
+                if(window.readLocalModule('purchaseOrders').length) window.activateLocalModule('purchaseOrders');
+                else { window.renderPOs(); window.populateDeliveryReferenceDropdown(); }
+            }, (error) => {
+                console.error('Purchase Order Sync Error:', error);
+                if(window.isPermissionError(error)) window.activateLocalModule('purchaseOrders');
             });
 
             // Sync untuk Suppliers
@@ -2760,34 +2766,39 @@
                 const grandTotal = sub + (sub * (tax / 100));
                 
                 const poId = document.getElementById('po-id').value;
-                
-                if (poId) {
-                    const data = {
-                        title: document.getElementById('po-title').value,
-                        clientId: document.getElementById('po-client').value,
-                        items: items, 
-                        notes: document.getElementById('po-notes').value, 
-                        terms: document.getElementById('po-terms').value,
-                        subtotal: sub, 
-                        taxRate: tax,
-                        value: grandTotal
-                    };
-                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', poId), data);
+                const existingPO = poId ? window.purchaseOrders.find(item => String(item.id) === String(poId)) : null;
+                const data = {
+                    ...(existingPO || {}),
+                    title: document.getElementById('po-title').value.trim(),
+                    clientId: document.getElementById('po-client').value,
+                    items,
+                    notes: document.getElementById('po-notes').value.trim(),
+                    terms: document.getElementById('po-terms').value.trim(),
+                    subtotal: sub,
+                    taxRate: tax,
+                    value: grandTotal,
+                    updatedAt: new Date().toISOString(),
+                    updatedBy: window.user.email || window.user.uid
+                };
+                if(!poId) {
+                    data.status = 'Diterbitkan';
+                    data.date = new Date().toISOString().split('T')[0];
+                    data.poNum = `PO-${new Date().getFullYear()}${Date.now().toString().slice(-4)}`;
+                    data.createdAt = new Date().toISOString();
+                    data.createdBy = window.user.email || window.user.uid;
+                }
+                delete data.id;
+                if(window.moduleStorageMode.purchaseOrders === 'local') {
+                    window.saveLocalModuleRecord('purchaseOrders', data, poId);
                 } else {
-                    const data = {
-                        title: document.getElementById('po-title').value,
-                        clientId: document.getElementById('po-client').value,
-                        status: 'Diterbitkan',
-                        items: items, 
-                        notes: document.getElementById('po-notes').value, 
-                        terms: document.getElementById('po-terms').value,
-                        subtotal: sub, 
-                        taxRate: tax, 
-                        value: grandTotal,
-                        date: new Date().toISOString().split('T')[0],
-                        poNum: `PO-${new Date().getFullYear()}${Date.now().toString().slice(-4)}`
-                    };
-                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'purchase_orders'), data);
+                    try {
+                        if(poId) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', poId), data);
+                        else await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'purchase_orders'), data);
+                    } catch(saveError) {
+                        if(!window.isPermissionError(saveError)) throw saveError;
+                        window.saveLocalModuleRecord('purchaseOrders', data, poId);
+                        alert('PO berhasil disimpan di perangkat ini. Izin Firebase untuk Purchase Order belum aktif.');
+                    }
                 }
                 
                 window.togglePOModal(false); e.target.reset(); document.getElementById('po-id').value = '';
@@ -3286,7 +3297,18 @@
         window.deleteClient = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus data master pelanggan ini permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clients', id)); };
         window.deleteSupplier = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus data supplier ini permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'suppliers', id)); };
         window.deleteInventory = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus data persediaan barang ini?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'inventory', id)); };
-        window.deletePO = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus dokumen PO ini permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id)); };
+        window.deletePO = async (id) => {
+            if(!checkAdminPrivilege() || !confirm("Yakin ingin menghapus dokumen PO ini permanen?")) return;
+            const po = window.purchaseOrders.find(item => String(item.id) === String(id));
+            try {
+                if(window.moduleStorageMode.purchaseOrders === 'local' || po?._local) window.deleteLocalModuleRecord('purchaseOrders', id);
+                else await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'purchase_orders', id));
+            } catch(error) {
+                if(window.isPermissionError(error)) { window.deleteLocalModuleRecord('purchaseOrders', id); return; }
+                console.error('Delete PO Error:', error);
+                alert('Gagal menghapus PO: ' + error.message);
+            }
+        };
         window.deleteDeliveryNote = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus Surat Jalan ini secara permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'delivery_notes', id)); };
         window.deleteOperation = async (id) => { if(checkAdminPrivilege() && confirm("Yakin ingin menghapus kegiatan operasional ini secara permanen?")) await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'operations', id)); };
         window.deleteEmployee = async (id) => {
