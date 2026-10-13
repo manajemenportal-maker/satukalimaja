@@ -3165,7 +3165,30 @@
                     items: window.getInvoiceItems(),
                     status: paid>=total?'Lunas':(paid>0?'DP / Sebagian':'Belum Bayar')
                 };
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'invoices'), invData);
+                const invoiceRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'invoices'), invData);
+
+                // Jika menerima DP/termin, terbitkan faktur pelunasan terpisah sebesar sisa tagihan.
+                // Rincian disalin otomatis dari invoice awal dan nilai tiap baris disesuaikan proporsional.
+                const balance = Math.max(0, Math.round(total - paid));
+                if (payStatus === 'DP' && paid > 0 && balance > 0) {
+                    const ratio = balance / total;
+                    const settlementNum = `INV-LUNAS-${new Date().getFullYear()}${Date.now().toString().slice(-5)}`;
+                    const settlementSubtotal = balance / (1 + tax/100);
+                    const settlementItems = (invData.items || []).map(item => ({
+                        ...item,
+                        price: Math.round((Number(item.price)||0) * ratio * 100) / 100
+                    }));
+                    // Koreksi selisih pembulatan pada baris terakhir agar jumlah rincian mendekati sisa DPP.
+                    const settlementData = {
+                        invNum: settlementNum, clientId: invData.clientId, dealId: invData.dealId,
+                        date: invData.date, dueDate: invData.dueDate,
+                        subtotal: settlementSubtotal, taxRate: tax, total: balance, paid: 0,
+                        items: settlementItems, status: 'Belum Bayar', invoiceKind: 'Pelunasan',
+                        settlementOf: invoiceRef.id, originalInvoiceNum: num,
+                        originalTotal: total, dpPaid: paid, balance: balance
+                    };
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'invoices'), settlementData);
+                }
 
                 if (paid > 0) {
                     const prop = paid / total;
@@ -4198,7 +4221,21 @@
         })).filter(item => item.description);
         window.fillInvFromDeal = () => {
             const d = window.deals.find(x => String(x.id) === String(document.getElementById('inv-deal').value));
-            if(d) { document.getElementById('inv-client').value = d.clientId; document.getElementById('inv-subtotal').value = d.subtotal; window.calcInvTotal(); }
+            if(d) {
+                document.getElementById('inv-client').value = d.clientId;
+                document.getElementById('inv-subtotal').value = d.subtotal;
+                const sourceItems = Array.isArray(d.items) ? d.items : (Array.isArray(d.products) ? d.products : []);
+                if (sourceItems.length) {
+                    document.getElementById('inv-items-list').innerHTML = '';
+                    sourceItems.forEach(it => window.addInvoiceItemRow({
+                        description: it.description || it.desc || it.name || it.title || '',
+                        qty: it.qty ?? it.quantity ?? 1,
+                        unit: it.unit || 'Unit',
+                        price: it.price ?? it.unitPrice ?? 0
+                    }));
+                }
+                window.calcInvTotal();
+            }
         };
         window.calcInvTotal = () => {
             const rows = Array.from(document.querySelectorAll('#inv-items-list .invoice-item-row'));
@@ -4809,9 +4846,15 @@
                     </div>
                     <div style="display:flex;justify-content:space-between; margin-bottom: 20px;">
                         <div><b>TAGIHAN KEPADA:</b><br>${c.name}<br>UP: ${c.pic}<br>${c.address}</div>
-                        <div style="text-align:right"><h2 style="margin:0;color:#16a34a;letter-spacing:1px;">FAKTUR PENJUALAN (INVOICE)</h2><div style="margin-top: 10px;"><b>No Invoice:</b> ${inv.invNum}<br><b>Tgl Terbit:</b> ${inv.date}<br><b>Jatuh Tempo:</b> ${inv.dueDate}</div></div>
+                        <div style="text-align:right"><h2 style="margin:0;color:#16a34a;letter-spacing:1px;">${inv.invoiceKind === 'Pelunasan' ? 'FAKTUR PELUNASAN' : 'FAKTUR PENJUALAN (INVOICE)'}</h2><div style="margin-top: 10px;"><b>No Invoice:</b> ${inv.invNum}<br><b>Tgl Terbit:</b> ${inv.date}<br><b>Jatuh Tempo:</b> ${inv.dueDate}</div></div>
                     </div>
                     
+                    ${inv.invoiceKind === 'Pelunasan' ? `<div style="margin:12px 0;padding:12px;border:1px solid #f59e0b;background:#fffbeb;border-radius:5px;"><b>FAKTUR PELUNASAN</b><br>Invoice awal: ${inv.originalInvoiceNum || '-'}<br>Total tagihan awal: ${window.formatIDR(inv.originalTotal || 0)}<br>DP/termin diterima: ${window.formatIDR(inv.dpPaid || 0)}<br><b>Sisa yang harus dibayar: ${window.formatIDR(inv.balance ?? inv.total)}</b></div>` : ''}
+                    <h3 style="margin:18px 0 8px;font-size:13px;">RINCIAN BARANG / PEKERJAAN</h3>
+                    <table style="width:100%;border-collapse:collapse;margin-bottom:18px;">
+                        <thead><tr><th style="border:1px solid #ccc;padding:8px;text-align:left;">No.</th><th style="border:1px solid #ccc;padding:8px;text-align:left;">Uraian Barang / Pekerjaan</th><th style="border:1px solid #ccc;padding:8px;text-align:right;">Jumlah</th><th style="border:1px solid #ccc;padding:8px;text-align:left;">Satuan</th><th style="border:1px solid #ccc;padding:8px;text-align:right;">Harga Satuan</th><th style="border:1px solid #ccc;padding:8px;text-align:right;">Jumlah Harga</th></tr></thead>
+                        <tbody>${(inv.items && inv.items.length ? inv.items : [{description:'Rincian belum diisi',qty:1,unit:'-',price:inv.subtotal}]).map((item,index)=>`<tr><td style="border:1px solid #ccc;padding:8px;">${index+1}</td><td style="border:1px solid #ccc;padding:8px;">${item.description || '-'}</td><td style="border:1px solid #ccc;padding:8px;text-align:right;">${item.qty ?? 1}</td><td style="border:1px solid #ccc;padding:8px;">${item.unit || '-'}</td><td style="border:1px solid #ccc;padding:8px;text-align:right;">${window.formatIDR(item.price || 0)}</td><td style="border:1px solid #ccc;padding:8px;text-align:right;">${window.formatIDR((Number(item.qty)||0)*(Number(item.price)||0))}</td></tr>`).join('')}</tbody>
+                    </table>
                     <div class="total-box">
                         <table>
                             <tr><td>Subtotal Dasar</td><td style="text-align:right">${window.formatIDR(inv.subtotal)}</td></tr>
